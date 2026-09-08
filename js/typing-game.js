@@ -38,18 +38,59 @@ var TypingGame = (function () {
     return out;
   }
 
-  // レベルの文字からランダムな 2〜4 文字の語を作る(和文の ゛゜ は先頭に置かない)
-  function makeRandomWord(levelChars, rnd) {
+  /*
+   * 苦手度: 文字別統計 {a: 出題数, c: 正解数} から 0〜1 の値を返す。
+   * (a - c + 1) / (a + 2) のラプラス平滑化。未出題は 0.5、全問正解は徐々に 0 へ近づく。
+   */
+  function weakness(st) {
+    var a = st ? (st.a || 0) : 0;
+    var c = st ? (st.c || 0) : 0;
+    return (a - c + 1) / (a + 2);
+  }
+
+  // 語の重み: 1 + 4 × (文字の苦手度の平均)。苦手文字を含む語ほど選ばれやすい
+  function wordWeight(word, charStats) {
+    if (!word.length) { return 1; }
+    var sum = 0;
+    for (var i = 0; i < word.length; i++) { sum += weakness(charStats && charStats[word[i]]); }
+    return 1 + 4 * (sum / word.length);
+  }
+
+  // 重み付きランダム抽選(重みが全て 0 なら一様)。戻り値は index
+  function pickWeighted(weights, rnd) {
     rnd = rnd || Math.random;
-    var len = 2 + Math.floor(rnd() * 3);
+    var total = 0;
+    for (var i = 0; i < weights.length; i++) { total += weights[i]; }
+    if (total <= 0) { return Math.floor(rnd() * weights.length); }
+    var r = rnd() * total;
+    for (var j = 0; j < weights.length; j++) {
+      r -= weights[j];
+      if (r < 0) { return j; }
+    }
+    return weights.length - 1;
+  }
+
+  /*
+   * レベルの文字からランダムな語を作る。len 省略時は 2〜4 文字。
+   * charStats を渡すと苦手な文字が出やすくなる(重み 0.3 + 苦手度)。
+   * 和文の ゛゜ー は先頭や連続では使わない。
+   */
+  function makeRandomWord(levelChars, rnd, len, charStats) {
+    rnd = rnd || Math.random;
+    if (!len) { len = 2 + Math.floor(rnd() * 3); }
     var marks = { '゛': true, '゜': true, 'ー': true };
     var bases = levelChars.filter(function (c) { return !marks[c]; });
     var pool = bases.length ? bases : levelChars;
+    function draw(from) {
+      if (!charStats) { return from[Math.floor(rnd() * from.length)]; }
+      var ws = from.map(function (c) { return 0.3 + weakness(charStats[c]); });
+      return from[pickWeighted(ws, rnd)];
+    }
     var w = '';
     for (var i = 0; i < len; i++) {
       var from = (i === 0) ? pool : levelChars;
-      var c = from[Math.floor(rnd() * from.length)];
-      if (marks[c] && (i === 0 || marks[w[i - 1]])) { c = pool[Math.floor(rnd() * pool.length)]; }
+      var c = draw(from);
+      if (marks[c] && (i === 0 || marks[w[i - 1]])) { c = draw(pool); }
       w += c;
     }
     return w;
@@ -70,6 +111,9 @@ var TypingGame = (function () {
   var $ = function (s) { return document.querySelector(s); };
   var state = 'idle';          // 'idle' | 'countdown' | 'play' | 'result'
   var duration = 60;
+  var source = 'words';        // 'words' | 'random'(レベル文字からランダム 5 文字)
+  var showCode = true;         // 文字の下にトンツーを表示
+  var RANDOM_LEN = 5;
   var words = [];              // 候補語
   var word = '';               // 現在の語(正規化済み)
   var next = '';               // 次の語
@@ -83,10 +127,16 @@ var TypingGame = (function () {
   var hooks = {};              // { getMode, getLevelChars, recordChar, saveStats, getBest, setBest, levelUp, levelDown, levelLabel }
 
   function pickWord(avoid) {
+    var charStats = hooks.getCharStats ? hooks.getCharStats() : null;
+    if (source === 'random') {
+      return makeRandomWord(hooks.getLevelChars(), Math.random, RANDOM_LEN, charStats);
+    }
     var w;
     if (words.length >= MIN_CANDIDATES) {
+      // 苦手文字を含む語を優先(重み付き抽選)。直前と同じ語は避ける
+      var weights = words.map(function (x) { return wordWeight(x, charStats); });
       for (var g = 0; g < 8; g++) {
-        w = words[Math.floor(Math.random() * words.length)];
+        w = words[pickWeighted(weights)];
         if (w !== avoid) { break; }
       }
       return w;
@@ -96,7 +146,7 @@ var TypingGame = (function () {
       w = words[Math.floor(Math.random() * words.length)];
       if (w !== avoid) { return w; }
     }
-    return makeRandomWord(hooks.getLevelChars());
+    return makeRandomWord(hooks.getLevelChars(), Math.random, 0, charStats);
   }
 
   // 各文字を「文字 + トンツー(・−)」のチップで表示
@@ -111,10 +161,12 @@ var TypingGame = (function () {
       span.className = cls;
       var ch = document.createElement('b');
       ch.textContent = word[i];
-      var code = document.createElement('small');
-      code.textContent = Codec.toDisplay(Codec.encodeChar(word[i], mode) || '');
       span.appendChild(ch);
-      span.appendChild(code);
+      if (showCode) {
+        var code = document.createElement('small');
+        code.textContent = Codec.toDisplay(Codec.encodeChar(word[i], mode) || '');
+        span.appendChild(code);
+      }
       box.appendChild(span);
     }
     $('#tx-game-next').textContent = next ? '次: ' + next : '';
@@ -139,6 +191,15 @@ var TypingGame = (function () {
     document.querySelectorAll('.tx-game-dur').forEach(function (b) {
       b.classList.toggle('active', Number(b.getAttribute('data-dur')) === duration);
     });
+    renderOptions();
+  }
+
+  function renderOptions() {
+    $('#tx-game-src-words').classList.toggle('active', source === 'words');
+    $('#tx-game-src-random').classList.toggle('active', source === 'random');
+    var b = $('#tx-game-code');
+    b.classList.toggle('active', showCode);
+    b.setAttribute('aria-pressed', showCode ? 'true' : 'false');
   }
 
   function show(which) {
@@ -245,6 +306,16 @@ var TypingGame = (function () {
   function init(h) {
     hooks = h;
     duration = DURATIONS.indexOf(h.initialDuration) >= 0 ? h.initialDuration : 60;
+    source = h.initialSource === 'random' ? 'random' : 'words';
+    showCode = h.initialShowCode !== false;
+    $('#tx-game-src-words').addEventListener('click', function () { setSource('words'); });
+    $('#tx-game-src-random').addEventListener('click', function () { setSource('random'); });
+    $('#tx-game-code').addEventListener('click', function () {
+      showCode = !showCode;
+      if (hooks.onOptionsChange) { hooks.onOptionsChange({ source: source, showCode: showCode }); }
+      renderOptions();
+      if (state === 'play') { renderWord(false); }
+    });
     $('#tx-game-start').addEventListener('click', start);
     $('#tx-game-again').addEventListener('click', function () { abort(); start(); });
     $('#tx-game-result-close').addEventListener('click', abort);
@@ -260,10 +331,22 @@ var TypingGame = (function () {
     renderIdle();
   }
 
+  // 出題ソースの切替。プレイ中に切り替えた場合は次の語から反映
+  function setSource(src) {
+    source = src === 'random' ? 'random' : 'words';
+    if (hooks.onOptionsChange) { hooks.onOptionsChange({ source: source, showCode: showCode }); }
+    renderOptions();
+    if (state === 'play' || state === 'countdown') { next = pickWord(word); renderWord(false); }
+  }
+
   return {
     DURATIONS: DURATIONS,
+    RANDOM_LEN: RANDOM_LEN,
     candidates: candidates,
     makeRandomWord: makeRandomWord,
+    weakness: weakness,
+    wordWeight: wordWeight,
+    pickWeighted: pickWeighted,
     summarize: summarize,
     init: init,
     enter: function () { abort(); },

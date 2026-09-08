@@ -137,6 +137,13 @@
           <button class="tx-game-dur" data-dur="120" type="button">120秒</button>
         </div>
       </div>
+      <div class="row tx-game-opts">
+        <div class="seg tx-game-src" role="group" aria-label="出題">
+          <button id="tx-game-src-words" class="active" type="button">単語</button>
+          <button id="tx-game-src-random" type="button">ランダム5文字</button>
+        </div>
+        <button id="tx-game-code" class="tx-game-code active" type="button" aria-pressed="true" title="文字の下にトンツーを表示">・− 表示</button>
+      </div>
       <div id="tx-game-idle">
         <button id="tx-game-start" class="big-btn primary" type="button">▶ スタート</button>
         <p id="tx-game-best" class="hint"></p>
@@ -310,7 +317,7 @@
     <div class="card about">
       <h2>このアプリについて</h2>
       <p style="font-size:14px">
-        モールス練習 v1.4.1<br>
+        モールス練習 v1.5.0<br>
         欧文・和文対応のモールス信号練習アプリ。オフラインでも動作します。<br>
         <a href="https://github.com/tomohiko-ohhashi/moco-prac" target="_blank" rel="noopener">GitHub リポジトリ</a>
       </p>
