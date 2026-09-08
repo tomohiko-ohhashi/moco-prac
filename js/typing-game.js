@@ -99,15 +99,22 @@ var TypingGame = (function () {
     return makeRandomWord(hooks.getLevelChars());
   }
 
+  // 各文字を「文字 + トンツー(・−)」のチップで表示
   function renderWord(flashWrong) {
     var box = $('#tx-game-word');
+    var mode = hooks.getMode();
     box.textContent = '';
     for (var i = 0; i < word.length; i++) {
       var cls = i < pos ? 'done' : (i === pos ? 'cur' : 'pending');
       if (i === pos && flashWrong) { cls += ' wrong'; }
       var span = document.createElement('span');
       span.className = cls;
-      span.textContent = word[i];
+      var ch = document.createElement('b');
+      ch.textContent = word[i];
+      var code = document.createElement('small');
+      code.textContent = Codec.toDisplay(Codec.encodeChar(word[i], mode) || '');
+      span.appendChild(ch);
+      span.appendChild(code);
       box.appendChild(span);
     }
     $('#tx-game-next').textContent = next ? '次: ' + next : '';
