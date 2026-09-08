@@ -327,6 +327,9 @@ body.fit-tx #tab-tx {
   body.fit-tx #tab-tx .tx-game-head { margin-bottom: 4px; }
   body.fit-tx #tab-tx .tx-game-head .stepper button { min-height: 36px; min-width: 40px; }
   body.fit-tx #tab-tx .tx-game-durs button { min-height: 30px; padding: 2px 6px; font-size: 12px; }
+  body.fit-tx #tab-tx .tx-game-opts { margin-bottom: 2px; }
+  body.fit-tx #tab-tx .tx-game-src button,
+  body.fit-tx #tab-tx .tx-game-code { min-height: 28px; padding: 2px 6px; font-size: 12px; }
   body.fit-tx #tab-tx .tx-game-word { min-height: 52px; font-size: 26px; padding: 0; }
   body.fit-tx #tab-tx .tx-game-word > span small { font-size: 10px; }
   body.fit-tx #tab-tx .tx-game-word .count { font-size: 32px; }
@@ -471,6 +474,10 @@ body.fit-tx #tab-tx {
 .tx-game-head { margin-bottom: 8px; }
 .tx-game-durs button { min-height: 36px; padding: 2px 8px; font-size: 13px; white-space: nowrap; }
 .tx-game-head .val { min-width: 60px; }
+.tx-game-opts { margin-bottom: 6px; }
+.tx-game-src button { min-height: 34px; padding: 2px 10px; font-size: 13px; white-space: nowrap; }
+.tx-game-code { min-height: 34px; padding: 2px 12px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.tx-game-code.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
 .tx-game-bar {
   height: 6px;
   background: var(--bg);

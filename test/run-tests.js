@@ -330,6 +330,30 @@ section('typing-game');
   assertEq(Game.summarize(10, 0, 30).cpm, 20, '30 秒で 10 文字 → 20 CPM');
 })();
 
+(function () {
+  // 苦手度と重み付き抽選
+  assertEq(Game.weakness(undefined), 0.5, '未出題の苦手度は 0.5');
+  assertEq(Game.weakness({ a: 10, c: 10 }), 1 / 12, '全問正解 (10/10) の苦手度は 1/12');
+  assertEq(Game.weakness({ a: 4, c: 0 }), 5 / 6, '全問不正解 (0/4) の苦手度は 5/6');
+  assert(Game.weakness({ a: 10, c: 5 }) > Game.weakness({ a: 10, c: 9 }), '正解が少ないほど苦手度が高い');
+  var stats = { 'K': { a: 10, c: 10 }, 'M': { a: 10, c: 10 }, 'Q': { a: 6, c: 1 } };
+  assert(Game.wordWeight('QKM', stats) > Game.wordWeight('KMK', stats), '苦手文字 Q を含む語の重みが大きい');
+  assertEq(Game.wordWeight('', stats), 1, '空語の重みは 1');
+  // 決定的な乱数で抽選を確認
+  assertEq(Game.pickWeighted([1, 1, 8], function () { return 0.5; }), 2, '重み [1,1,8] で r=0.5 → 3 番目');
+  assertEq(Game.pickWeighted([1, 1, 8], function () { return 0.05; }), 0, '重み [1,1,8] で r=0.05 → 1 番目');
+  assertEq(Game.pickWeighted([0, 0], function () { return 0.9; }), 1, '重みが全て 0 なら一様');
+  // 苦手文字が出やすいランダム語(Q が弱い): 大量試行で Q の出現率が K より高い
+  var chars = ['K', 'M', 'Q'];
+  var count = { K: 0, M: 0, Q: 0 };
+  for (var i = 0; i < 400; i++) {
+    var w = Game.makeRandomWord(chars, Math.random, 5, stats);
+    assertEq(w.length, 5, 'ランダム 5 文字');
+    for (var j = 0; j < w.length; j++) { count[w[j]]++; }
+  }
+  assert(count.Q > count.K && count.Q > count.M, '苦手文字 Q が多く出る: ' + JSON.stringify(count));
+})();
+
 // ---------- 結果 ----------
 console.log('');
 if (failures > 0) {
