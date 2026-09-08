@@ -13,6 +13,7 @@
   };
 
   var DEFAULT_SETTINGS = {
+    lang: 'ja', // 'ja' | 'en'
     audio: { freq: 700, volume: 70 },
     rx: { charWpm: 18, effWpm: 12, questions: 10, groupSize: 1 },
     tx: { wpm: 15, input: 'straight', slow: false, autoPlay: true },
@@ -92,6 +93,18 @@
   window.App = App;
 
   document.addEventListener('DOMContentLoaded', function () {
+    // 表示言語(各画面の初期化より先に静的文字列を差し替える)。
+    // 言語が変わったら再適用し langchange を配信(各画面が動的文字列を描き直す)。
+    I18n.setLang(App.settings.lang);
+    I18n.apply();
+    UI.bus.on('settingschange', function (s) {
+      var l = I18n.normalize(s.lang);
+      if (l === I18n.getLang()) { return; }
+      I18n.setLang(l);
+      I18n.apply();
+      UI.bus.emit('langchange', l);
+    });
+
     // モードトグル
     UI.$('#mode-intl').addEventListener('click', function () { UI.setMode('intl'); });
     UI.$('#mode-wabun').addEventListener('click', function () { UI.setMode('wabun'); });

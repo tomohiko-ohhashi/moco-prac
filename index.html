@@ -19,44 +19,44 @@
 
 <header class="app-header">
   <h1>もこぷらっ！</h1>
-  <div class="mode-toggle" role="group" aria-label="符号モード">
-    <button id="mode-intl" class="active" type="button">欧文</button>
-    <button id="mode-wabun" type="button">和文</button>
+  <div class="mode-toggle" role="group" aria-label="符号モード" data-i18n-aria="mode.aria">
+    <button id="mode-intl" class="active" type="button" data-i18n="mode.intl">欧文</button>
+    <button id="mode-wabun" type="button" data-i18n="mode.wabun">和文</button>
   </div>
 </header>
 
 <main>
   <!-- ============ 聞き取り(受信) ============ -->
-  <section id="tab-rx" class="tab-panel" aria-label="聞き取り練習">
+  <section id="tab-rx" class="tab-panel" aria-label="聞き取り練習" data-i18n-aria="rx.aria">
     <div class="card">
       <div class="row">
-        <div class="stepper" aria-label="レベル">
-          <button id="rx-level-down" type="button" aria-label="レベルを下げる">−</button>
+        <div class="stepper" aria-label="レベル" data-i18n-aria="level.aria">
+          <button id="rx-level-down" type="button" aria-label="レベルを下げる" data-i18n-aria="level.down">−</button>
           <span class="val" id="rx-level-label">Lv 1</span>
-          <button id="rx-level-up" type="button" aria-label="レベルを上げる">＋</button>
+          <button id="rx-level-up" type="button" aria-label="レベルを上げる" data-i18n-aria="level.up">＋</button>
         </div>
-        <div class="stepper" aria-label="実効速度">
-          <button id="rx-eff-down" type="button" aria-label="実効速度を下げる">−</button>
+        <div class="stepper" aria-label="実効速度" data-i18n-aria="rx.eff.aria">
+          <button id="rx-eff-down" type="button" aria-label="実効速度を下げる" data-i18n-aria="rx.eff.down">−</button>
           <span class="val" id="rx-eff-label">12 wpm</span>
-          <button id="rx-eff-up" type="button" aria-label="実効速度を上げる">＋</button>
+          <button id="rx-eff-up" type="button" aria-label="実効速度を上げる" data-i18n-aria="rx.eff.up">＋</button>
         </div>
       </div>
       <div id="rx-level-chars" class="level-chars"></div>
     </div>
 
     <div id="rx-idle" class="card">
-      <button id="rx-start" class="big-btn primary" type="button">セッション開始</button>
-      <p class="hint" id="rx-idle-info">再生される符号を聞いて、文字を答えてください。</p>
+      <button id="rx-start" class="big-btn primary" type="button" data-i18n="rx.start">セッション開始</button>
+      <p class="hint" id="rx-idle-info" data-i18n="rx.idleInfo">再生される符号を聞いて、文字を答えてください。</p>
     </div>
 
     <div id="rx-play" class="card" hidden>
       <div class="progress-label" id="rx-qnum"></div>
-      <button id="rx-replay" class="big-btn" type="button">🔊 もう一度再生</button>
+      <button id="rx-replay" class="big-btn" type="button" data-i18n="rx.replay">🔊 もう一度再生</button>
       <div id="rx-answer" class="rx-answer" aria-live="polite"></div>
       <div id="rx-grid" class="btn-grid"></div>
       <div class="rx-actions">
-        <button id="rx-backspace" type="button" aria-label="1文字削除">⌫</button>
-        <button id="rx-submit" class="primary" type="button">判定</button>
+        <button id="rx-backspace" type="button" aria-label="1文字削除" data-i18n-aria="rx.backspace">⌫</button>
+        <button id="rx-submit" class="primary" type="button" data-i18n="rx.submit">判定</button>
       </div>
     </div>
 
@@ -65,47 +65,47 @@
       <div id="rx-diff" class="diff-line"></div>
       <div id="rx-morse" class="morse-line"></div>
       <div class="rx-actions">
-        <button id="rx-result-replay" type="button">🔊 再生</button>
-        <button id="rx-next" class="primary" type="button">次へ</button>
+        <button id="rx-result-replay" type="button" data-i18n="common.play">🔊 再生</button>
+        <button id="rx-next" class="primary" type="button" data-i18n="common.next">次へ</button>
       </div>
     </div>
 
     <div id="rx-summary" class="card" hidden>
-      <div class="progress-label">セッション結果</div>
+      <div class="progress-label" data-i18n="rx.summaryTitle">セッション結果</div>
       <div id="rx-score" class="summary-score"></div>
       <ul id="rx-worst" class="worst-list"></ul>
       <div class="rx-actions">
-        <button id="rx-levelup" class="primary" type="button" hidden>⬆ レベルアップ</button>
-        <button id="rx-again" type="button">もう一度</button>
+        <button id="rx-levelup" class="primary" type="button" hidden data-i18n="rx.levelUp">⬆ レベルアップ</button>
+        <button id="rx-again" type="button" data-i18n="common.again">もう一度</button>
       </div>
     </div>
   </section>
 
   <!-- ============ 打鍵(送信) ============ -->
-  <section id="tab-tx" class="tab-panel" aria-label="打鍵練習" hidden>
+  <section id="tab-tx" class="tab-panel" aria-label="打鍵練習" data-i18n-aria="tx.aria" hidden>
     <div class="tx-col tx-col-a">
     <div class="card">
-      <div class="seg" role="group" aria-label="練習モード">
-        <button id="tx-mode-free" class="active" type="button">自由打鍵</button>
-        <button id="tx-mode-drill" type="button">課題</button>
-        <button id="tx-mode-tree" type="button">ツリー</button>
-        <button id="tx-mode-game" type="button">ゲーム</button>
+      <div class="seg" role="group" aria-label="練習モード" data-i18n-aria="tx.submode.aria">
+        <button id="tx-mode-free" class="active" type="button" data-i18n="tx.free">自由打鍵</button>
+        <button id="tx-mode-drill" type="button" data-i18n="tx.drill">課題</button>
+        <button id="tx-mode-tree" type="button" data-i18n="tx.tree">ツリー</button>
+        <button id="tx-mode-game" type="button" data-i18n="tx.game">ゲーム</button>
       </div>
       <div id="tx-drill-row" style="margin-top:10px" hidden>
         <div class="row">
-          <div class="stepper" aria-label="レベル">
-            <button id="tx-level-down" type="button" aria-label="レベルを下げる">−</button>
+          <div class="stepper" aria-label="レベル" data-i18n-aria="level.aria">
+            <button id="tx-level-down" type="button" aria-label="レベルを下げる" data-i18n-aria="level.down">−</button>
             <span class="val" id="tx-level-label">Lv 1</span>
-            <button id="tx-level-up" type="button" aria-label="レベルを上げる">＋</button>
+            <button id="tx-level-up" type="button" aria-label="レベルを上げる" data-i18n-aria="level.up">＋</button>
           </div>
           <span id="tx-drill-score" class="label"></span>
         </div>
         <div class="row" style="margin-top:10px">
-          <span><span class="label">お題:</span><span id="tx-target-char" class="tx-target-char">-</span></span>
+          <span><span class="label" data-i18n="tx.target">お題:</span><span id="tx-target-char" class="tx-target-char">-</span></span>
           <span>
-            <button id="tx-target-play" type="button">🔊 聞く</button>
-            <button id="tx-target-auto" class="tx-auto" type="button" aria-pressed="false" title="お題が変わったら自動で再生">自動</button>
-            <button id="tx-target-skip" type="button">スキップ</button>
+            <button id="tx-target-play" type="button" data-i18n="tx.listen">🔊 聞く</button>
+            <button id="tx-target-auto" class="tx-auto" type="button" aria-pressed="false" title="お題が変わったら自動で再生" data-i18n-title="tx.autoTitle">自動</button>
+            <button id="tx-target-skip" type="button" data-i18n="common.skip">スキップ</button>
           </span>
         </div>
       </div>
@@ -113,39 +113,39 @@
 
     <div id="tx-tree-wrap" class="card tx-tree-wrap" hidden>
       <div class="tx-tree-head">
-        <div id="tx-tree-half" class="seg tx-tree-half" role="group" aria-label="表示する側" hidden>
-          <button id="tx-half-dit" type="button">・側</button>
-          <button id="tx-half-dah" type="button">−側</button>
+        <div id="tx-tree-half" class="seg tx-tree-half" role="group" aria-label="表示する側" data-i18n-aria="tx.half.aria" hidden>
+          <button id="tx-half-dit" type="button" data-i18n="tx.half.dit">・側</button>
+          <button id="tx-half-dah" type="button" data-i18n="tx.half.dah">−側</button>
         </div>
         <span id="tx-tree-buffer" class="tx-tree-buffer" aria-hidden="true"></span>
         <span id="tx-tree-result" class="tx-tree-result" aria-live="polite"></span>
-        <button id="tx-tree-clear" class="tx-tree-clear" type="button">クリア</button>
+        <button id="tx-tree-clear" class="tx-tree-clear" type="button" data-i18n="common.clear">クリア</button>
       </div>
       <div id="tx-tree" class="tx-tree"></div>
     </div>
 
     <div id="tx-game-wrap" class="card tx-game-wrap" hidden>
       <div class="row tx-game-head">
-        <div class="stepper" aria-label="レベル">
-          <button id="tx-game-level-down" type="button" aria-label="レベルを下げる">−</button>
+        <div class="stepper" aria-label="レベル" data-i18n-aria="level.aria">
+          <button id="tx-game-level-down" type="button" aria-label="レベルを下げる" data-i18n-aria="level.down">−</button>
           <span class="val" id="tx-game-level-label">Lv 1</span>
-          <button id="tx-game-level-up" type="button" aria-label="レベルを上げる">＋</button>
+          <button id="tx-game-level-up" type="button" aria-label="レベルを上げる" data-i18n-aria="level.up">＋</button>
         </div>
-        <div class="seg tx-game-durs" role="group" aria-label="制限時間">
+        <div class="seg tx-game-durs" role="group" aria-label="制限時間" data-i18n-aria="game.dur.aria">
           <button class="tx-game-dur" data-dur="30" type="button">30秒</button>
           <button class="tx-game-dur active" data-dur="60" type="button">60秒</button>
           <button class="tx-game-dur" data-dur="120" type="button">120秒</button>
         </div>
       </div>
       <div class="row tx-game-opts">
-        <div class="seg tx-game-src" role="group" aria-label="出題">
-          <button id="tx-game-src-words" class="active" type="button">単語</button>
-          <button id="tx-game-src-random" type="button">ランダム5文字</button>
+        <div class="seg tx-game-src" role="group" aria-label="出題" data-i18n-aria="game.src.aria">
+          <button id="tx-game-src-words" class="active" type="button" data-i18n="game.words">単語</button>
+          <button id="tx-game-src-random" type="button" data-i18n="game.random">ランダム5文字</button>
         </div>
-        <button id="tx-game-code" class="tx-game-code active" type="button" aria-pressed="true" title="文字の下にトンツーを表示">・− 表示</button>
+        <button id="tx-game-code" class="tx-game-code active" type="button" aria-pressed="true" title="文字の下にトンツーを表示" data-i18n-title="game.codeTitle" data-i18n="game.code">・− 表示</button>
       </div>
       <div id="tx-game-idle">
-        <button id="tx-game-start" class="big-btn primary" type="button">▶ スタート</button>
+        <button id="tx-game-start" class="big-btn primary" type="button" data-i18n="game.start">▶ スタート</button>
         <p id="tx-game-best" class="hint"></p>
       </div>
       <div id="tx-game-play" hidden>
@@ -161,8 +161,8 @@
         <div id="tx-game-result-score" class="summary-score"></div>
         <p id="tx-game-result-detail" class="hint" style="text-align:center"></p>
         <div class="rx-actions">
-          <button id="tx-game-result-close" type="button">閉じる</button>
-          <button id="tx-game-again" class="primary" type="button">もう一度</button>
+          <button id="tx-game-result-close" type="button" data-i18n="common.close">閉じる</button>
+          <button id="tx-game-again" class="primary" type="button" data-i18n="common.again">もう一度</button>
         </div>
       </div>
     </div>
@@ -172,63 +172,74 @@
     <div id="tx-decoded" class="tx-decoded" aria-live="polite"></div>
     <div id="tx-buffer" class="tx-buffer"></div>
 
-    <div id="tx-pad" class="tx-pad">タップ / 長押しで打鍵(PC は Space キー)</div>
+    <div id="tx-pad" class="tx-pad" data-i18n="tx.pad">タップ / 長押しで打鍵(PC は Space キー)</div>
     <div id="tx-paddle" class="tx-paddle" hidden>
-      <button id="tx-dit" type="button" aria-label="短点">・</button>
-      <button id="tx-dah" type="button" aria-label="長点">−</button>
+      <button id="tx-dit" type="button" aria-label="短点" data-i18n-aria="tx.dit">・</button>
+      <button id="tx-dah" type="button" aria-label="長点" data-i18n-aria="tx.dah">−</button>
     </div>
 
     <div class="rx-actions tx-bottom">
-      <button id="tx-clear" type="button">クリア</button>
+      <button id="tx-clear" type="button" data-i18n="common.clear">クリア</button>
     </div>
     </div>
   </section>
 
   <!-- ============ 符号表・変換 ============ -->
-  <section id="tab-ref" class="tab-panel" aria-label="符号表・変換" hidden>
+  <section id="tab-ref" class="tab-panel" aria-label="符号表・変換" data-i18n-aria="ref.aria" hidden>
     <div class="card">
-      <h2>変換ツール</h2>
-      <label class="label" for="conv-text">テキスト</label>
-      <textarea id="conv-text" rows="2" placeholder="SOS / こんにちは"></textarea>
+      <h2 data-i18n="ref.convTitle">変換ツール</h2>
+      <label class="label" for="conv-text" data-i18n="ref.text">テキスト</label>
+      <textarea id="conv-text" rows="2" placeholder="SOS / こんにちは" data-i18n-ph="ref.textPh"></textarea>
       <div style="height:8px"></div>
-      <label class="label" for="conv-morse">モールス(・− / .- どちらでも)</label>
+      <label class="label" for="conv-morse" data-i18n="ref.morse">モールス(・− / .- どちらでも)</label>
       <textarea id="conv-morse" rows="2" placeholder="... --- ..."></textarea>
       <div class="rx-actions">
-        <button id="conv-play" class="primary" type="button">▶ 再生</button>
-        <button id="conv-stop" type="button" hidden>■ 停止</button>
-        <button id="conv-clear" type="button">クリア</button>
+        <button id="conv-play" class="primary" type="button" data-i18n="ref.play">▶ 再生</button>
+        <button id="conv-stop" type="button" hidden data-i18n="ref.stop">■ 停止</button>
+        <button id="conv-clear" type="button" data-i18n="common.clear">クリア</button>
       </div>
       <div id="conv-preview" class="conv-preview"></div>
     </div>
     <div class="card">
       <h2 id="ref-table-title">符号表</h2>
-      <p class="hint">タップすると符号を再生します。</p>
+      <p class="hint" data-i18n="ref.tableHint">タップすると符号を再生します。</p>
       <div id="ref-tables"></div>
     </div>
   </section>
 
   <!-- ============ 設定 ============ -->
-  <section id="tab-settings" class="tab-panel" aria-label="設定" hidden>
+  <section id="tab-settings" class="tab-panel" aria-label="設定" data-i18n-aria="set.aria" hidden>
     <div class="card">
-      <h2>音</h2>
+      <h2 data-i18n="set.language">言語</h2>
       <div class="setting-row">
-        <span class="name">周波数 <span id="set-freq-label"></span></span>
-        <input type="range" id="set-freq" min="400" max="1000" step="10">
-      </div>
-      <div class="setting-row">
-        <span class="name">音量 <span id="set-volume-label"></span></span>
-        <input type="range" id="set-volume" min="0" max="100" step="5">
-      </div>
-      <div class="setting-row">
-        <span class="name">テスト再生</span>
-        <button id="set-test-sound" type="button">🔊 テスト</button>
+        <span class="name">言語 / Language</span>
+        <div class="seg">
+          <button id="set-lang-ja" class="active" type="button" lang="ja">日本語</button>
+          <button id="set-lang-en" type="button" lang="en">English</button>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <h2>聞き取り練習</h2>
+      <h2 data-i18n="set.sound">音</h2>
       <div class="setting-row">
-        <span class="name">文字速度</span>
+        <span class="name"><span data-i18n="set.freq">周波数</span> <span id="set-freq-label"></span></span>
+        <input type="range" id="set-freq" min="400" max="1000" step="10">
+      </div>
+      <div class="setting-row">
+        <span class="name"><span data-i18n="set.volume">音量</span> <span id="set-volume-label"></span></span>
+        <input type="range" id="set-volume" min="0" max="100" step="5">
+      </div>
+      <div class="setting-row">
+        <span class="name" data-i18n="set.test">テスト再生</span>
+        <button id="set-test-sound" type="button" data-i18n="set.testBtn">🔊 テスト</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="set.rx">聞き取り練習</h2>
+      <div class="setting-row">
+        <span class="name" data-i18n="set.charWpm">文字速度</span>
         <div class="stepper">
           <button id="set-charwpm-down" type="button">−</button>
           <span class="val" id="set-charwpm-label"></span>
@@ -236,7 +247,7 @@
         </div>
       </div>
       <div class="setting-row">
-        <span class="name">実効速度</span>
+        <span class="name" data-i18n="set.effWpm">実効速度</span>
         <div class="stepper">
           <button id="set-effwpm-down" type="button">−</button>
           <span class="val" id="set-effwpm-label"></span>
@@ -244,7 +255,7 @@
         </div>
       </div>
       <div class="setting-row">
-        <span class="name">出題数 / セッション</span>
+        <span class="name" data-i18n="set.questions">出題数 / セッション</span>
         <div class="stepper">
           <button id="set-questions-down" type="button">−</button>
           <span class="val" id="set-questions-label"></span>
@@ -252,7 +263,7 @@
         </div>
       </div>
       <div class="setting-row">
-        <span class="name">出題文字数</span>
+        <span class="name" data-i18n="set.groupSize">出題文字数</span>
         <div class="seg">
           <button data-group="1" class="set-group active" type="button">1</button>
           <button data-group="3" class="set-group" type="button">3</button>
@@ -262,9 +273,9 @@
     </div>
 
     <div class="card">
-      <h2>打鍵練習</h2>
+      <h2 data-i18n="set.tx">打鍵練習</h2>
       <div class="setting-row">
-        <span class="name">判定速度</span>
+        <span class="name" data-i18n="set.txWpm">判定速度</span>
         <div class="stepper">
           <button id="set-txwpm-down" type="button">−</button>
           <span class="val" id="set-txwpm-label"></span>
@@ -272,21 +283,21 @@
         </div>
       </div>
       <div class="setting-row">
-        <span class="name">入力方式</span>
+        <span class="name" data-i18n="set.input">入力方式</span>
         <div class="seg">
-          <button id="set-input-straight" class="active" type="button">ストレート</button>
-          <button id="set-input-paddle" type="button">二つボタン</button>
+          <button id="set-input-straight" class="active" type="button" data-i18n="set.straight">ストレート</button>
+          <button id="set-input-paddle" type="button" data-i18n="set.paddle">二つボタン</button>
         </div>
       </div>
       <div class="setting-row">
-        <span class="name">ゆっくり確定<br><small class="label">文字・語の確定を1.5倍待つ</small></span>
+        <span class="name"><span data-i18n="set.slow">ゆっくり確定</span><br><small class="label" data-i18n="set.slowHint">文字・語の確定を1.5倍待つ</small></span>
         <label class="switch">
           <input type="checkbox" id="set-slow">
           <span class="knob"></span>
         </label>
       </div>
       <div class="setting-row">
-        <span class="name">お題を自動再生<br><small class="label">課題モードでお題が変わるたびに符号を鳴らす</small></span>
+        <span class="name"><span data-i18n="set.autoPlay">お題を自動再生</span><br><small class="label" data-i18n="set.autoPlayHint">課題モードでお題が変わるたびに符号を鳴らす</small></span>
         <label class="switch">
           <input type="checkbox" id="set-autoplay">
           <span class="knob"></span>
@@ -295,9 +306,9 @@
     </div>
 
     <div class="card" id="set-screen-card">
-      <h2>画面</h2>
+      <h2 data-i18n="set.screen">画面</h2>
       <div class="setting-row" id="set-wakelock-row">
-        <span class="name">スリープ防止<br><small class="label">練習中に画面を消灯しない</small></span>
+        <span class="name"><span data-i18n="set.wakeLock">スリープ防止</span><br><small class="label" data-i18n="set.wakeLockHint">練習中に画面を消灯しない</small></span>
         <label class="switch">
           <input type="checkbox" id="set-wakelock">
           <span class="knob"></span>
@@ -306,22 +317,22 @@
     </div>
 
     <div class="card">
-      <h2>統計</h2>
+      <h2 data-i18n="set.stats">統計</h2>
       <div id="set-stats" class="stats-block"></div>
       <div class="rx-actions">
-        <button id="set-reset-stats" class="danger" type="button">統計をリセット</button>
-        <button id="set-reset-all" class="danger" type="button">全データをリセット</button>
+        <button id="set-reset-stats" class="danger" type="button" data-i18n="set.resetStats">統計をリセット</button>
+        <button id="set-reset-all" class="danger" type="button" data-i18n="set.resetAll">全データをリセット</button>
       </div>
     </div>
 
     <div class="card about">
-      <h2>このアプリについて</h2>
+      <h2 data-i18n="about.title">このアプリについて</h2>
       <p style="font-size:14px">
-        もこぷらっ！(モールス練習アプリ) v1.5.1<br>
-        欧文・和文対応のモールス信号練習アプリ。オフラインでも動作します。<br>
-        <a href="https://github.com/tomohiko-ohhashi/moco-prac" target="_blank" rel="noopener">GitHub リポジトリ</a>
+        <span data-i18n="about.name">もこぷらっ！(モールス練習アプリ)</span> v1.6.0<br>
+        <span data-i18n="about.desc">欧文・和文対応のモールス信号練習アプリ。オフラインでも動作します。</span><br>
+        <a href="https://github.com/tomohiko-ohhashi/moco-prac" target="_blank" rel="noopener" data-i18n="about.repo">GitHub リポジトリ</a>
       </p>
-      <p class="hint">
+      <p class="hint" data-i18n="about.ios">
         ⚠ iPhone / iPad はマナーモード(消音スイッチON)にしていると音が出ません。
         音が出ない場合は消音スイッチと音量をご確認ください。
       </p>
@@ -329,11 +340,11 @@
   </section>
 </main>
 
-<nav class="tab-bar" role="tablist" aria-label="メインタブ">
-  <button data-tab="rx" role="tab" aria-selected="true" type="button"><span class="icon">🎧</span>聞き取り</button>
-  <button data-tab="tx" role="tab" aria-selected="false" type="button"><span class="icon">🔘</span>打鍵</button>
-  <button data-tab="ref" role="tab" aria-selected="false" type="button"><span class="icon">📖</span>符号表</button>
-  <button data-tab="settings" role="tab" aria-selected="false" type="button"><span class="icon">⚙️</span>設定</button>
+<nav class="tab-bar" role="tablist" aria-label="メインタブ" data-i18n-aria="tab.aria">
+  <button data-tab="rx" role="tab" aria-selected="true" type="button"><span class="icon">🎧</span><span data-i18n="tab.rx">聞き取り</span></button>
+  <button data-tab="tx" role="tab" aria-selected="false" type="button"><span class="icon">🔘</span><span data-i18n="tab.tx">打鍵</span></button>
+  <button data-tab="ref" role="tab" aria-selected="false" type="button"><span class="icon">📖</span><span data-i18n="tab.ref">符号表</span></button>
+  <button data-tab="settings" role="tab" aria-selected="false" type="button"><span class="icon">⚙️</span><span data-i18n="tab.settings">設定</span></button>
 </nav>
 
 <div id="toast" hidden></div>
@@ -342,6 +353,7 @@
 <script src="./js/morse-codec.js"></script>
 <script src="./js/morse-tree.js"></script>
 <script src="./js/keyer.js"></script>
+<script src="./js/i18n.js"></script>
 <script src="./js/typing-game.js"></script>
 <script src="./js/storage.js"></script>
 <script src="./js/audio.js"></script>
