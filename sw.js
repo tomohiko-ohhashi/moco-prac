@@ -2,7 +2,7 @@
  * Service Worker: cache-first のオフライン対応。
  * ファイルを更新したら CACHE_VERSION を上げること(activate で旧キャッシュを削除)。
  */
-var CACHE_VERSION = 'v1.5.0';
+var CACHE_VERSION = 'v1.5.1';
 var CACHE_NAME = 'moco-prac-' + CACHE_VERSION;
 
 var ASSETS = [
