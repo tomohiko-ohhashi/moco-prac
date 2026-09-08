@@ -56,16 +56,26 @@ var MorseTree = (function () {
 
   // ---------- SVG 描画(ブラウザ) ----------
 
+  /*
+   * createTreeView(container, { onTap(node), onPrefixChange(prefix) })
+   * render(mode, { prefix, rowH }):
+   *   prefix = 表示する部分木の根の符号('' = 全体、'.'/'-' = 半分)。
+   *   和文は 5 要素で葉が 32 個あり画面に収まらないため、半分ずつ表示し
+   *   打鍵の 1 要素目で自動的に切り替える。
+   */
   function createTreeView(container, opts) {
     opts = opts || {};
     var SVG_NS = 'http://www.w3.org/2000/svg';
-    var ROW_H = 46;
-    var MIN_CELL = 20;
+    var TOP_PAD = 22;
     var tree = null;
+    var mode = 'intl';
+    var prefix = '';
+    var rowH = 46;
     var elems = {};   // code → { g, shape }
     var svg = null;
     var curCode = '';
     var flashTimer = null;
+    var flashCode = null;
 
     function svgEl(tag, attrs) {
       var e = document.createElementNS(SVG_NS, tag);
@@ -75,22 +85,38 @@ var MorseTree = (function () {
       return e;
     }
 
+    function subDepth() { return tree.depth - prefix.length; }
+    function inSubtree(code) { return code.indexOf(prefix) === 0; }
+
     function layout() {
       var cw = container.clientWidth || 360;
-      var cell = Math.max(MIN_CELL, Math.floor((cw - 8) / tree.leaves));
+      var leaves = Math.pow(2, subDepth());
+      var cell = Math.max(18, Math.floor((cw - 8) / leaves));
       return {
         cell: cell,
-        width: cell * tree.leaves + 8,
-        height: ROW_H * (tree.depth + 1) + 12,
-        r: Math.min(14, Math.floor(cell / 2) - 1)
+        width: cell * leaves + 8,
+        height: TOP_PAD + rowH * subDepth() + Math.max(16, Math.floor(rowH * 0.45)),
+        r: Math.min(14, Math.max(8, Math.floor(Math.min(cell / 2, rowH / 2.4)) - 1))
       };
     }
 
-    function px(node, L) { return 4 + node.x * (L.width - 8); }
-    function py(node) { return 24 + node.depth * ROW_H; }
+    // 部分木内での相対位置(0..1)
+    function relX(node) {
+      var rd = node.depth - prefix.length;
+      var span = Math.pow(2, rd);
+      var idxP = prefix ? tree.byCode[prefix].index : 0;
+      return (node.index - idxP * span + 0.5) / span;
+    }
+    function px(node, L) { return 4 + relX(node) * (L.width - 8); }
+    function py(node) { return TOP_PAD + (node.depth - prefix.length) * rowH; }
 
-    function render(mode) {
+    function render(m, o) {
+      o = o || {};
+      mode = m;
+      if (typeof o.prefix === 'string') { prefix = o.prefix; }
+      if (o.rowH) { rowH = o.rowH; }
       tree = build(mode);
+      if (prefix && !tree.byCode[prefix]) { prefix = ''; }
       elems = {};
       curCode = '';
       container.textContent = '';
@@ -104,11 +130,15 @@ var MorseTree = (function () {
       var nodesG = svgEl('g', { 'class': 'tree-nodes' });
       svg.appendChild(edges);
       svg.appendChild(nodesG);
+      var rootNode = tree.byCode[prefix];
+      var fontSize = Math.max(10, Math.min(16, L.r + 2));
 
       tree.nodes.forEach(function (node) {
+        if (!inSubtree(node.code)) { return; }
+        var isRoot = node.code === prefix;
         var x = px(node, L);
         var y = py(node);
-        if (node.depth > 0) {
+        if (!isRoot) {
           var p = tree.byCode[parentCode(node.code)];
           var line = svgEl('line', {
             x1: px(p, L), y1: py(p) + L.r, x2: x, y2: y - L.r, 'class': 'tree-edge'
@@ -116,11 +146,11 @@ var MorseTree = (function () {
           elems['edge:' + node.code] = line;
           edges.appendChild(line);
         }
-        var g = svgEl('g', { 'class': 'tree-node' + (node.char ? '' : ' empty') + (node.depth === 0 ? ' root' : '') });
+        var g = svgEl('g', { 'class': 'tree-node' + (node.char ? '' : ' empty') + (isRoot ? ' root' : '') });
         g.setAttribute('data-code', node.code);
         var shape;
-        if (node.depth === 0) {
-          // ルート: アンテナ風の小さな三角
+        if (isRoot && !node.code) {
+          // 全体表示の根: アンテナ風の小さな三角
           shape = svgEl('path', {
             d: 'M' + (x - 9) + ' ' + (y - 8) + ' L' + (x + 9) + ' ' + (y - 8) + ' L' + x + ' ' + (y + 6) + ' Z',
             'class': 'tree-shape'
@@ -136,17 +166,17 @@ var MorseTree = (function () {
         if (node.char) {
           var t = svgEl('text', {
             x: x, y: y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
-            'font-size': Math.max(10, Math.min(16, L.r + 2)), 'class': 'tree-label'
+            'font-size': fontSize, 'class': 'tree-label'
           });
           t.textContent = node.char;
           g.appendChild(t);
         }
-        if (node.depth === 1) {
-          // 1段目の枝の中間に「・」「−」の案内
-          var rootX = px(tree.byCode[''], L);
-          var rootY = py(tree.byCode['']);
+        if (node.depth === prefix.length + 1) {
+          // 部分木の 1 段目の枝の中間に「・」「−」の案内
+          var rx0 = px(rootNode, L);
+          var ry0 = py(rootNode);
           var hint = svgEl('text', {
-            x: (rootX + x) / 2, y: (rootY + y) / 2 - 6,
+            x: (rx0 + x) / 2, y: (ry0 + y) / 2 - 4,
             'text-anchor': 'middle', 'font-size': 13, 'class': 'tree-hint'
           });
           hint.textContent = node.dah ? '−' : '・';
@@ -165,6 +195,20 @@ var MorseTree = (function () {
       });
 
       container.appendChild(svg);
+      if (opts.onPrefixChange) { opts.onPrefixChange(prefix); }
+    }
+
+    // 部分木の切替(和文の ・側/−側)
+    function setPrefix(p) {
+      if (p === prefix) { return; }
+      render(mode, { prefix: p });
+    }
+
+    // 符号が今の部分木の外なら、その符号側の部分木へ切り替える
+    function ensureVisible(code) {
+      if (!prefix || !code || inSubtree(code)) { return; }
+      var np = code.slice(0, prefix.length);
+      if (tree.byCode[np]) { render(mode, { prefix: np }); }
     }
 
     function setClass(code, cls, on) {
@@ -175,56 +219,55 @@ var MorseTree = (function () {
     }
 
     function clearPath() {
+      endFlash();
       var c = curCode;
       while (c.length > 0) { setClass(c, 'path', false); setClass(c, 'cur', false); c = parentCode(c); }
       setClass('', 'cur', false);
       curCode = '';
     }
 
+    function endFlash() {
+      if (flashTimer) { clearTimeout(flashTimer); flashTimer = null; }
+      if (flashCode !== null) { setClass(flashCode, 'hit', false); flashCode = null; }
+    }
+
     // 打鍵中の符号列に合わせて経路を点灯。木の外(深すぎ)なら null を返す
     function setPath(code) {
+      endFlash();
+      ensureVisible(code);
       clearPath();
       curCode = code;
       var c = code;
       while (c.length > 0) { setClass(c, 'path', true); c = parentCode(c); }
       var node = tree.byCode[code];
       setClass(code, 'cur', !!node);
-      scrollTo(node);
       return node || null;
     }
 
     // 文字確定: 一瞬強調して経路を消す
     function flash(code) {
-      var node = tree.byCode[code];
       setPath(code);
-      if (flashTimer) { clearTimeout(flashTimer); }
-      if (node) { setClass(code, 'hit', true); }
+      var node = tree.byCode[code];
+      if (node) { setClass(code, 'hit', true); flashCode = code; }
       flashTimer = setTimeout(function () {
-        if (node) { setClass(code, 'hit', false); }
-        clearPath();
+        flashTimer = null;
+        // 次の文字の打鍵が始まっていれば(curCode が変わっていれば)その経路は消さない
+        if (curCode === code) { endFlash(); clearPath(); } else { endFlash(); }
       }, 650);
       return node || null;
     }
 
-    function scrollTo(node) {
-      if (!node || !svg) { return; }
-      var L = layout();
-      var x = px(node, L);
-      var target = x - container.clientWidth / 2;
-      if (Math.abs(container.scrollLeft - target) < 10) { return; }
-      try {
-        container.scrollTo({ left: target, behavior: 'smooth' });
-      } catch (e) {
-        container.scrollLeft = target;
-      }
-    }
-
     return {
       render: render,
+      setPrefix: setPrefix,
+      getPrefix: function () { return prefix; },
       setPath: setPath,
       flash: flash,
       clear: clearPath,
-      getTree: function () { return tree; }
+      getTree: function () { return tree; },
+      // 行数(部分木の根を含む)。高さ計算用
+      rows: function () { return tree ? subDepth() + 1 : 0; },
+      TOP_PAD: TOP_PAD
     };
   }
 

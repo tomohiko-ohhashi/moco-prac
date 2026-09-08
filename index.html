@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>モールス練習</title>
   <meta name="description" content="モールス信号の聞き取り・打鍵練習アプリ(欧文・和文対応)">
   <meta name="theme-color" content="#171d26">
@@ -83,6 +83,7 @@
 
   <!-- ============ 打鍵(送信) ============ -->
   <section id="tab-tx" class="tab-panel" aria-label="打鍵練習" hidden>
+    <div class="tx-col tx-col-a">
     <div class="card">
       <div class="seg" role="group" aria-label="練習モード">
         <button id="tx-mode-free" class="active" type="button">自由打鍵</button>
@@ -109,13 +110,20 @@
     </div>
 
     <div id="tx-tree-wrap" class="card tx-tree-wrap" hidden>
-      <div class="row">
-        <span class="label">左＝短点・ 右＝長点−。打鍵で木をたどります(ノードをタップで再生)</span>
+      <div class="tx-tree-head">
+        <div id="tx-tree-half" class="seg tx-tree-half" role="group" aria-label="表示する側" hidden>
+          <button id="tx-half-dit" type="button">・側</button>
+          <button id="tx-half-dah" type="button">−側</button>
+        </div>
+        <span id="tx-tree-buffer" class="tx-tree-buffer" aria-hidden="true"></span>
         <span id="tx-tree-result" class="tx-tree-result" aria-live="polite"></span>
+        <button id="tx-tree-clear" class="tx-tree-clear" type="button">クリア</button>
       </div>
       <div id="tx-tree" class="tx-tree"></div>
     </div>
+    </div>
 
+    <div class="tx-col tx-col-b">
     <div id="tx-decoded" class="tx-decoded" aria-live="polite"></div>
     <div id="tx-buffer" class="tx-buffer"></div>
 
@@ -125,10 +133,10 @@
       <button id="tx-dah" type="button" aria-label="長点">−</button>
     </div>
 
-    <div class="rx-actions" style="margin-top:12px">
+    <div class="rx-actions tx-bottom">
       <button id="tx-clear" type="button">クリア</button>
     </div>
-    <p class="hint">押下 &lt; 2単位で短点、以上で長点。間隔をあけると文字・語が確定します。判定速度は設定タブで変更できます。</p>
+    </div>
   </section>
 
   <!-- ============ 符号表・変換 ============ -->
@@ -257,7 +265,7 @@
     <div class="card about">
       <h2>このアプリについて</h2>
       <p style="font-size:14px">
-        モールス練習 v1.1.0<br>
+        モールス練習 v1.2.0<br>
         欧文・和文対応のモールス信号練習アプリ。オフラインでも動作します。<br>
         <a href="https://github.com/tomohiko-ohhashi/moco-prac" target="_blank" rel="noopener">GitHub リポジトリ</a>
       </p>
