@@ -593,6 +593,8 @@ textarea:focus { outline: 1px solid var(--accent); }
 }
 .setting-row:last-child { border-bottom: none; }
 .setting-row .name { font-size: 15px; flex: 1 1 0; min-width: 0; }
+.setting-row .seg { flex: 0 0 auto; }
+.setting-row .seg button { min-width: 56px; padding: 6px 12px; }
 
 input[type="range"] {
   flex: 1;
