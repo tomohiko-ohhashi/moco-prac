@@ -2,7 +2,7 @@
  * Service Worker: cache-first のオフライン対応。
  * ファイルを更新したら CACHE_VERSION を上げること(activate で旧キャッシュを削除)。
  */
-var CACHE_VERSION = 'v1.0.0';
+var CACHE_VERSION = 'v1.1.0';
 var CACHE_NAME = 'moco-prac-' + CACHE_VERSION;
 
 var ASSETS = [
@@ -12,6 +12,7 @@ var ASSETS = [
   './css/style.css',
   './js/morse-data.js',
   './js/morse-codec.js',
+  './js/morse-tree.js',
   './js/keyer.js',
   './js/storage.js',
   './js/audio.js',

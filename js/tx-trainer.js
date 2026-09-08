@@ -14,9 +14,11 @@ var TxTrainer = (function () {
   var activePointer = null;   // 捕捉中の pointerId(2本目は無視)
   var spaceDown = false;
   var codes = [];             // 確定済み符号列('/'=語間)
-  var submode = 'free';       // 'free' | 'drill'
+  var submode = 'free';       // 'free' | 'drill' | 'tree'
   var drill = { target: '', asked: 0, correct: 0, judging: false };
   var playHandle = null;
+  var treeView = null;        // ツリーモードの SVG ビュー
+  var resizeTimer = null;
 
   function unitMs() { return 1200 / App.settings.tx.wpm; }
   function now() { return performance.now(); }
@@ -60,17 +62,58 @@ var TxTrainer = (function () {
     $('#tx-paddle').hidden = !paddle;
   }
 
+  // ---------- ツリーモード ----------
+
+  function treeResultFor(code) {
+    var r = MorseCodec.decode(code, UI.getMode());
+    return r.text || '';
+  }
+
+  function renderTree() {
+    if (!treeView) {
+      treeView = MorseTree.createTreeView($('#tx-tree'), {
+        onTap: function (node) {
+          if (!node.code) { return; }
+          Audio2.ensureAudio();
+          if (playHandle) { playHandle.stop(); }
+          playHandle = Audio2.playMorse(node.code, {
+            charWpm: App.settings.tx.wpm,
+            freq: App.settings.audio.freq,
+            onDone: function () { playHandle = null; }
+          });
+          treeView.flash(node.code);
+          $('#tx-tree-result').textContent = node.char || treeResultFor(node.code);
+        }
+      });
+    }
+    treeView.render(UI.getMode());
+    $('#tx-tree-result').textContent = '';
+  }
+
+  function treeOnElement() {
+    if (submode !== 'tree' || !treeView) { return; }
+    treeView.setPath(keyer.getBuffer());
+  }
+
+  function treeOnChar(code) {
+    if (submode !== 'tree' || !treeView) { return; }
+    treeView.flash(code);
+    var ch = treeResultFor(code);
+    $('#tx-tree-result').textContent = ch;
+  }
+
   // ---------- キーヤー ----------
 
   function buildKeyer() {
     keyer = createKeyer({
       unitMs: unitMs(),
       slow: App.settings.tx.slow,
-      onElement: function () { renderBuffer(); },
+      onElement: function () { renderBuffer(); treeOnElement(); },
       onChar: function (code) {
         codes.push(code);
         renderBuffer();
         renderDecoded();
+        treeOnChar(code);
       },
       onWord: function () {
         if (submode === 'drill') {
@@ -133,6 +176,8 @@ var TxTrainer = (function () {
     if (keyer) { keyer.reset(); }
     renderBuffer();
     renderDecoded();
+    if (treeView) { treeView.clear(); }
+    $('#tx-tree-result').textContent = '';
   }
 
   // ---------- 課題モード ----------
@@ -185,9 +230,15 @@ var TxTrainer = (function () {
     submode = m;
     $('#tx-mode-free').classList.toggle('active', m === 'free');
     $('#tx-mode-drill').classList.toggle('active', m === 'drill');
+    $('#tx-mode-tree').classList.toggle('active', m === 'tree');
     $('#tx-drill-row').hidden = m !== 'drill';
+    $('#tx-tree-wrap').hidden = m !== 'tree';
+    $('#tab-tx').classList.toggle('tx-tree-active', m === 'tree');
     clearAll();
     if (m === 'drill') { nextTarget(); }
+    if (m === 'tree') { renderTree(); }
+    App.ui.txSubmode = m;
+    App.saveUi();
   }
 
   // ---------- 初期化 ----------
@@ -261,6 +312,12 @@ var TxTrainer = (function () {
     $('#tx-clear').addEventListener('click', clearAll);
     $('#tx-mode-free').addEventListener('click', function () { setSubmode('free'); });
     $('#tx-mode-drill').addEventListener('click', function () { setSubmode('drill'); });
+    $('#tx-mode-tree').addEventListener('click', function () { setSubmode('tree'); });
+    window.addEventListener('resize', function () {
+      if (submode !== 'tree') { return; }
+      if (resizeTimer) { clearTimeout(resizeTimer); }
+      resizeTimer = setTimeout(renderTree, 150);
+    });
     $('#tx-target-play').addEventListener('click', playTarget);
     $('#tx-target-skip').addEventListener('click', nextTarget);
     $('#tx-level-down').addEventListener('click', function () {
@@ -280,13 +337,24 @@ var TxTrainer = (function () {
       drill.asked = 0;
       drill.correct = 0;
       if (submode === 'drill') { nextTarget(); } else { clearAll(); }
+      if (submode === 'tree') { renderTree(); }
     });
     UI.bus.on('tabchange', function (t) {
-      if (t === 'tx') { startPolling(); } else { stopPolling(); keyCancel(); }
+      if (t === 'tx') {
+        startPolling();
+        // 非表示中は幅が 0 なので、表示されてからツリーを描く
+        if (submode === 'tree') { renderTree(); }
+      } else {
+        stopPolling();
+        keyCancel();
+      }
     });
 
     renderDecoded();
     renderBuffer();
+    // 前回のサブモードを復元(ツリーはタブ表示時に描画される)
+    var saved = App.ui.txSubmode;
+    if (saved === 'drill' || saved === 'tree') { setSubmode(saved); }
   }
 
   return { init: init };
