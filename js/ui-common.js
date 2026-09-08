@@ -102,6 +102,36 @@ var UI = (function () {
     render();
   }
 
+  // ダブルタップ拡大の抑止(CSS touch-action と viewport に加えた保険)。
+  // 2 回目のタップの既定動作(ズーム)を止め、ボタン等には自前で click を送る。
+  var lastTapAt = 0;
+  var touchStart = null; // { x, y } スクロール(移動あり)はタップ扱いしない
+  document.addEventListener('touchstart', function (e) {
+    var t = e.changedTouches && e.changedTouches[0];
+    touchStart = t ? { x: t.clientX, y: t.clientY } : null;
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    var t = e.changedTouches && e.changedTouches[0];
+    var moved = !touchStart || !t ||
+      Math.abs(t.clientX - touchStart.x) > 10 || Math.abs(t.clientY - touchStart.y) > 10;
+    if (moved || e.touches.length > 0) { lastTapAt = 0; return; }
+    var now = Date.now();
+    var target = e.target;
+    var quick = now - lastTapAt < 350;
+    lastTapAt = now;
+    if (!quick || !target) { return; }
+    if (target.closest && target.closest('input, textarea, select, label, a')) { return; }
+    e.preventDefault();
+    var clickable = target.closest ? target.closest('button, [role="button"], .tree-node, .ref-cell') : null;
+    if (clickable) { clickable.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); }
+  }, { passive: false });
+
+  // 長押しのコンテキストメニュー抑止(入力欄は除く)
+  document.addEventListener('contextmenu', function (e) {
+    if (e.target && e.target.closest && e.target.closest('input, textarea')) { return; }
+    e.preventDefault();
+  });
+
   return {
     bus: bus,
     $: $,
