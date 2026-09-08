@@ -383,7 +383,15 @@ var TxTrainer = (function () {
     $('#tx-mode-game').addEventListener('click', function () { setSubmode('game'); });
     TypingGame.init({
       initialDuration: App.ui.gameDuration,
+      initialSource: App.ui.gameSource,
+      initialShowCode: App.ui.gameShowCode,
       onDurationChange: function (d) { App.ui.gameDuration = d; App.saveUi(); },
+      onOptionsChange: function (o) {
+        App.ui.gameSource = o.source;
+        App.ui.gameShowCode = o.showCode;
+        App.saveUi();
+      },
+      getCharStats: function () { return App.modeStats('tx').chars || {}; },
       getMode: function () { return UI.getMode(); },
       getLevelChars: function () { return App.levelChars('tx'); },
       levelLabel: function () { return 'Lv ' + App.modeStats('tx').level + '/' + App.maxLevel(); },
