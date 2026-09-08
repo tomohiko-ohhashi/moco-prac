@@ -25,6 +25,7 @@ var Settings = (function () {
     $('#set-input-straight').classList.toggle('active', s.tx.input === 'straight');
     $('#set-input-paddle').classList.toggle('active', s.tx.input === 'paddle');
     $('#set-slow').checked = !!s.tx.slow;
+    $('#set-autoplay').checked = !!s.tx.autoPlay;
     $('#set-wakelock').checked = !!s.screen.wakeLock;
     renderStats();
   }
@@ -92,6 +93,8 @@ var Settings = (function () {
   // ---------- 初期化 ----------
 
   function init() {
+    // 他画面(課題行の「自動」ボタン等)からの変更をスイッチに反映
+    UI.bus.on('settingschange', render);
     var s = App.settings;
 
     $('#set-freq').addEventListener('input', function (e) {
@@ -141,6 +144,9 @@ var Settings = (function () {
     });
     $('#set-input-paddle').addEventListener('click', function () {
       s.tx.input = 'paddle'; App.saveSettings(); render();
+    });
+    $('#set-autoplay').addEventListener('change', function (e) {
+      s.tx.autoPlay = !!e.target.checked; App.saveSettings();
     });
     $('#set-slow').addEventListener('change', function (e) {
       s.tx.slow = !!e.target.checked; App.saveSettings();

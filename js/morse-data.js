@@ -81,7 +81,48 @@ var MorseData = (function () {
     'ハヒフヘホ', 'マミムメモ', 'ヤ ユ ヨ', 'ラリルレロ', 'ワヰ ヱヲ', 'ン'
   ];
 
+  // タイピングゲーム用の単語リスト(現在レベルの文字だけで組める語を出題)
+  var WORDS_INTL = [
+    // 短い語(初級レベルの文字 K M U R E S N A P T で組める)
+    'KM', 'MUM', 'RUM', 'SUM', 'SEE', 'USE', 'SUN', 'RUN', 'MEN', 'SEA', 'ARE', 'ERA',
+    'NEAR', 'SAME', 'NAME', 'MEAN', 'TEA', 'EAT', 'TEN', 'NET', 'SET', 'REST', 'PAST',
+    'STAR', 'SPARE', 'TAPE', 'PEN', 'MAP', 'ARM', 'EAR', 'RAM', 'MAN', 'NUT', 'RATE',
+    'TRUE', 'STEP', 'PART', 'NEST', 'TEAM', 'MEET', 'SEAT', 'TURN', 'TUNE', 'PURE',
+    // アマチュア無線の常用語・略語
+    'CQ', 'DE', 'TU', 'TNX', 'TKS', '73', '88', 'SOS', 'PARIS', 'TEST', 'QTH', 'QSL',
+    'QRZ', 'QRM', 'QRN', 'QSB', 'QSY', 'QRS', 'QRQ', 'RST', '599', '5NN', 'AGN', 'ANT',
+    'BK', 'CFM', 'CL', 'CUL', 'ES', 'FB', 'GA', 'GE', 'GM', 'GN', 'HR', 'HW', 'OM', 'OP',
+    'PSE', 'PWR', 'RIG', 'RPT', 'SRI', 'UR', 'VY', 'WX', 'XYL', 'YL', 'DX', 'HAM', 'OK',
+    // 一般語
+    'HELLO', 'WORLD', 'MORSE', 'CODE', 'RADIO', 'KEY', 'TONE', 'WATT', 'BAND', 'METER',
+    'JAPAN', 'TOKYO', 'OSAKA', 'CONTEST', 'GOOD', 'COPY', 'AGAIN', 'THANKS', 'SEND',
+    'WAIT', 'OVER', 'YES', 'NO', 'THE', 'AND', 'FOR', 'WITH', 'TIME', 'FINE', 'RAIN',
+    'SUNNY', 'CLOUDY', 'WIND', 'HOT', 'COLD', 'SIGNAL', 'REPORT', 'CALL', 'ANTENNA',
+    'POWER', 'FREQ', 'MODE', 'NIGHT', 'DAY', 'WEEK', 'YEAR', 'HOME', 'WORK', 'PLAY'
+  ];
+
+  var WORDS_WABUN = [
+    // 初級レベル(ア行〜)で組める語
+    'アイ', 'イエ', 'ウエ', 'アオ', 'オイ', 'エイ', 'アウ', 'ウオ', 'アイウエオ',
+    'カオ', 'コエ', 'イケ', 'エキ', 'カイ', 'キオク', 'カク', 'イカ', 'クウキ', 'アキ',
+    'サケ', 'シオ', 'スイカ', 'セカイ', 'ソコ', 'アサ', 'ウシ', 'イス', 'カサ', 'クサ',
+    'タコ', 'チカ', 'ツキ', 'テキ', 'トシ', 'イタ', 'ウタ', 'コト', 'アト', 'サト',
+    'ナツ', 'ニク', 'ヌノ', 'ネコ', 'ノキ', 'イヌ', 'アナ', 'カニ', 'キヌ', 'ソナタ',
+    'ハナ', 'ヒト', 'フネ', 'ヘタ', 'ホシ', 'ハレ', 'ヒカリ', 'フユ', 'ホン', 'アヒル',
+    'マチ', 'ミチ', 'ムシ', 'メシ', 'モチ', 'ウミ', 'ヤマ', 'カミ', 'ナミ', 'ミナト',
+    'ヤネ', 'ユキ', 'ヨル', 'ユメ', 'ヤサイ', 'ヨコハマ', 'ユカ', 'ヤマ', 'ヨム', 'ユウヒ',
+    'ラク', 'リス', 'ルス', 'レキシ', 'ロク', 'サクラ', 'クルマ', 'トリ', 'カワ', 'ソラ',
+    'ワニ', 'ワタシ', 'ニホン', 'ムセン', 'アンテナ', 'シンカンセン', 'テンキ', 'ツウシン',
+    'ラジオ', 'モールス', 'デンシン', 'コウシン', 'ジュシン', 'ソウシン', 'シンゴウ',
+    'オンガク', 'カゼ', 'アメ', 'クモリ', 'ユウガタ', 'トウキョウ', 'オオサカ', 'ナゴヤ',
+    'サッポロ', 'フクオカ', 'コンニチハ', 'サヨウナラ', 'アリガトウ', 'オハヨウ',
+    'オヤスミ', 'ヨロシク', 'サカナ', 'デンシャ', 'ヒコウキ', 'ガッコウ', 'カイシャ',
+    'シゴト', 'ヤスミ', 'ドウゾ', 'オネガイシマス', 'ゲンキ', 'タノシイ', 'ベンキョウ'
+  ];
+
   return {
+    WORDS_INTL: WORDS_INTL,
+    WORDS_WABUN: WORDS_WABUN,
     INTL_TABLE: INTL_TABLE,
     WABUN_TABLE: WABUN_TABLE,
     WABUN_PROSIGNS: WABUN_PROSIGNS,

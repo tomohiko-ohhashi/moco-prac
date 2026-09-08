@@ -14,7 +14,7 @@ var TxTrainer = (function () {
   var activePointer = null;   // 捕捉中の pointerId(2本目は無視)
   var spaceDown = false;
   var codes = [];             // 確定済み符号列('/'=語間)
-  var submode = 'free';       // 'free' | 'drill' | 'tree'
+  var submode = 'free';       // 'free' | 'drill' | 'tree' | 'game'
   var drill = { target: '', asked: 0, correct: 0, judging: false };
   var playHandle = null;
   var treeView = null;        // ツリーモードの SVG ビュー
@@ -153,12 +153,18 @@ var TxTrainer = (function () {
       slow: App.settings.tx.slow,
       onElement: function () { renderBuffer(); treeOnElement(); },
       onChar: function (code) {
+        if (submode === 'game') {
+          TypingGame.onChar(code);
+          renderBuffer();
+          return;
+        }
         codes.push(code);
         renderBuffer();
         renderDecoded();
         treeOnChar(code);
       },
       onWord: function () {
+        if (submode === 'game') { return; }
         if (submode === 'drill') {
           judgeDrill();
           return;
@@ -237,6 +243,18 @@ var TxTrainer = (function () {
     drill.judging = false;
     clearAll();
     renderDrill();
+    // お題の自動再生(打鍵タブ表示中のみ。初期化時の復元では鳴らさない)
+    if (App.settings.tx.autoPlay && submode === 'drill' && UI.getTab() === 'tx') {
+      playTarget();
+    }
+  }
+
+  function renderAutoPlay() {
+    var on = !!App.settings.tx.autoPlay;
+    var b = $('#tx-target-auto');
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.textContent = on ? '自動🔊' : '自動';
   }
 
   function judgeDrill() {
@@ -275,12 +293,17 @@ var TxTrainer = (function () {
     $('#tx-mode-free').classList.toggle('active', m === 'free');
     $('#tx-mode-drill').classList.toggle('active', m === 'drill');
     $('#tx-mode-tree').classList.toggle('active', m === 'tree');
+    $('#tx-mode-game').classList.toggle('active', m === 'game');
     $('#tx-drill-row').hidden = m !== 'drill';
     $('#tx-tree-wrap').hidden = m !== 'tree';
+    $('#tx-game-wrap').hidden = m !== 'game';
     $('#tab-tx').classList.toggle('tx-tree-active', m === 'tree');
+    $('#tab-tx').classList.toggle('tx-game-active', m === 'game');
     clearAll();
+    if (m !== 'game') { TypingGame.leave(); }
     if (m === 'drill') { nextTarget(); }
     if (m === 'tree') { renderTree(); }
+    if (m === 'game') { TypingGame.enter(); }
     App.ui.txSubmode = m;
     App.saveUi();
   }
@@ -357,6 +380,26 @@ var TxTrainer = (function () {
     $('#tx-mode-free').addEventListener('click', function () { setSubmode('free'); });
     $('#tx-mode-drill').addEventListener('click', function () { setSubmode('drill'); });
     $('#tx-mode-tree').addEventListener('click', function () { setSubmode('tree'); });
+    $('#tx-mode-game').addEventListener('click', function () { setSubmode('game'); });
+    TypingGame.init({
+      initialDuration: App.ui.gameDuration,
+      onDurationChange: function (d) { App.ui.gameDuration = d; App.saveUi(); },
+      getMode: function () { return UI.getMode(); },
+      getLevelChars: function () { return App.levelChars('tx'); },
+      levelLabel: function () { return 'Lv ' + App.modeStats('tx').level + '/' + App.maxLevel(); },
+      levelDown: function () {
+        var st = App.modeStats('tx');
+        if (st.level > 1) { st.level--; App.saveStats(); renderDrill(); }
+      },
+      levelUp: function () {
+        var st = App.modeStats('tx');
+        if (st.level < App.maxLevel()) { st.level++; App.saveStats(); renderDrill(); }
+      },
+      recordChar: function (ch, ok) { App.recordChar('tx', ch, ok); },
+      saveStats: function () { App.saveStats(); },
+      getBest: function () { return App.modeStats('tx').gameBest || null; },
+      setBest: function (r) { App.modeStats('tx').gameBest = r; }
+    });
     $('#tx-tree-clear').addEventListener('click', clearAll);
     $('#tx-half-dit').addEventListener('click', function () { if (treeView) { treeView.setPrefix('.'); } });
     $('#tx-half-dah').addEventListener('click', function () { if (treeView) { treeView.setPrefix('-'); } });
@@ -367,6 +410,13 @@ var TxTrainer = (function () {
     });
     $('#tx-target-play').addEventListener('click', playTarget);
     $('#tx-target-skip').addEventListener('click', nextTarget);
+    $('#tx-target-auto').addEventListener('click', function () {
+      App.settings.tx.autoPlay = !App.settings.tx.autoPlay;
+      App.saveSettings(); // settingschange → 設定タブのスイッチも同期
+      renderAutoPlay();
+      if (App.settings.tx.autoPlay) { playTarget(); }
+    });
+    renderAutoPlay();
     $('#tx-level-down').addEventListener('click', function () {
       var st = App.modeStats('tx');
       if (st.level > 1) { st.level--; App.saveStats(); nextTarget(); }
@@ -379,6 +429,7 @@ var TxTrainer = (function () {
     UI.bus.on('settingschange', function () {
       keyer.setOptions({ unitMs: unitMs(), slow: App.settings.tx.slow });
       applyInputMode();
+      renderAutoPlay();
       if (submode === 'tree' && UI.getTab() === 'tx') { renderTree(); }
     });
     UI.bus.on('modechange', function () {
@@ -386,6 +437,7 @@ var TxTrainer = (function () {
       drill.correct = 0;
       if (submode === 'drill') { nextTarget(); } else { clearAll(); }
       if (submode === 'tree') { renderTree(); }
+      if (submode === 'game') { TypingGame.enter(); }
     });
     UI.bus.on('tabchange', function (t) {
       // 打鍵タブは 3 モードとも画面内に収める(ページスクロールなし、パッドが残りを埋める)
@@ -397,6 +449,7 @@ var TxTrainer = (function () {
       } else {
         stopPolling();
         keyCancel();
+        if (submode === 'game') { TypingGame.leave(); }
       }
     });
 
@@ -404,7 +457,7 @@ var TxTrainer = (function () {
     renderBuffer();
     // 前回のサブモードを復元(ツリーはタブ表示時に描画される)
     var saved = App.ui.txSubmode;
-    if (saved === 'drill' || saved === 'tree') { setSubmode(saved); }
+    if (saved === 'drill' || saved === 'tree' || saved === 'game') { setSubmode(saved); }
   }
 
   return { init: init };

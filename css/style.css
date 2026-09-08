@@ -322,6 +322,15 @@ body.fit-tx #tab-tx {
   body.fit-tx #tab-tx .tx-paddle button { min-height: 0; }
   body.fit-tx #tab-tx .tx-bottom { margin-top: 8px; }
   body.fit-tx #tab-tx .tx-bottom button { min-height: 40px; }
+  /* ゲーム: 横画面では次の語を省き、単語表示を小さく */
+  body.fit-tx #tab-tx .tx-game-wrap { padding: 8px; }
+  body.fit-tx #tab-tx .tx-game-head { margin-bottom: 4px; }
+  body.fit-tx #tab-tx .tx-game-head .stepper button { min-height: 36px; min-width: 40px; }
+  body.fit-tx #tab-tx .tx-game-durs button { min-height: 30px; padding: 2px 6px; font-size: 12px; }
+  body.fit-tx #tab-tx .tx-game-word { min-height: 44px; font-size: 28px; padding: 2px 0; }
+  body.fit-tx #tab-tx .tx-game-word .count { font-size: 32px; }
+  body.fit-tx #tab-tx .tx-game-next { display: none; }
+  body.fit-tx #tab-tx #tx-game-start { min-height: 44px; font-size: 16px; }
 }
 }
 }
@@ -333,12 +342,15 @@ body.fit-tx #tab-tx {
   overflow: hidden;
 }
 .seg button {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   border: none;
   border-radius: 0;
   background: transparent;
   color: var(--muted);
   min-height: 44px;
+  padding: 6px 4px;
+  white-space: nowrap;
 }
 .seg button.active {
   background: var(--accent-dim);
@@ -405,6 +417,8 @@ body.fit-tx #tab-tx {
 }
 
 .tx-target-char { font-size: 34px; font-weight: 700; margin: 0 8px; }
+.tx-auto { color: var(--muted); }
+.tx-auto.active { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
 
 /* モールスツリー */
 .tx-tree-wrap { padding: 6px 8px 2px; flex: none; }
@@ -449,6 +463,58 @@ body.fit-tx #tab-tx {
 .tree-label { fill: var(--text); font-weight: 700; pointer-events: none; }
 .tree-hint { fill: var(--muted); }
 .tx-tree-active .tx-decoded, .tx-tree-active .tx-buffer, .tx-tree-active .tx-bottom { display: none; }
+
+/* タイピングゲーム */
+.tx-game-active .tx-decoded, .tx-game-active .tx-bottom { display: none; }
+.tx-game-wrap { padding: 10px 12px; flex: none; }
+.tx-game-head { margin-bottom: 8px; }
+.tx-game-durs button { min-height: 36px; padding: 2px 8px; font-size: 13px; white-space: nowrap; }
+.tx-game-head .val { min-width: 60px; }
+.tx-game-bar {
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+#tx-game-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+  transition: width 0.1s linear;
+}
+.tx-game-status { margin-bottom: 4px; }
+.tx-game-word {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 4px 0;
+}
+.tx-game-word .done { color: var(--ok); }
+.tx-game-word .cur {
+  color: var(--text);
+  border-bottom: 3px solid var(--warn);
+}
+.tx-game-word .cur.wrong {
+  color: var(--ng);
+  border-bottom-color: var(--ng);
+  animation: tx-shake 0.25s;
+}
+.tx-game-word .pending { color: var(--muted); }
+.tx-game-word .count { color: var(--accent); font-size: 40px; }
+.tx-game-next { text-align: center; color: var(--muted); font-size: 14px; min-height: 18px; }
+@keyframes tx-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
 
 /* ---------- 符号表 ---------- */
 textarea {
@@ -526,7 +592,9 @@ textarea:focus { outline: 1px solid var(--accent); }
   flex-wrap: wrap;
 }
 .setting-row:last-child { border-bottom: none; }
-.setting-row .name { font-size: 15px; }
+.setting-row .name { font-size: 15px; flex: 1 1 0; min-width: 0; }
+.setting-row .seg { flex: 0 0 auto; }
+.setting-row .seg button { min-width: 56px; padding: 6px 12px; }
 
 input[type="range"] {
   flex: 1;

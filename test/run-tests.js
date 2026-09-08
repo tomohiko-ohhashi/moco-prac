@@ -6,6 +6,7 @@ var Data = require('../js/morse-data.js');
 var Codec = require('../js/morse-codec.js');
 var createKeyer = require('../js/keyer.js');
 var Tree = require('../js/morse-tree.js');
+var Game = require('../js/typing-game.js');
 
 var failures = 0;
 var count = 0;
@@ -267,6 +268,64 @@ section('morse-tree');
   assertEq(t.byCode['..'].char, '゛', "'..' → ゛");
   assertEq(t.byCode['--.--'].char, 'ア', "'--.--' → ア");
   assert(!t.byCode['.-.-.-'], '6 要素の記号はツリー外');
+})();
+
+// ---------- タイピングゲーム ----------
+section('typing-game');
+
+(function () {
+  // 単語リストは全て正規化後にテーブルの文字だけで構成される
+  ['intl', 'wabun'].forEach(function (mode) {
+    var list = mode === 'intl' ? Data.WORDS_INTL : Data.WORDS_WABUN;
+    var table = mode === 'intl' ? Data.INTL_TABLE : Data.WABUN_TABLE;
+    list.forEach(function (w) {
+      var n = Codec.normalizeText(w, mode);
+      assert(n.length >= 2, mode + ' 単語は 2 文字以上: ' + w);
+      for (var i = 0; i < n.length; i++) {
+        assert(table[n[i]], mode + ' 単語の文字が表にある: ' + w + ' → ' + n[i]);
+      }
+    });
+  });
+  // レベル 1(K, M)では候補が無く、フル(全文字)なら全語が候補
+  var lv1 = Game.candidates('intl', ['K', 'M']);
+  assertEq(lv1.length, 1, "欧文 Lv1 (K,M) の候補は 'KM' のみ");
+  assertEq(lv1[0], 'KM', "候補 'KM'");
+  var early = Game.candidates('intl', Data.KOCH_ORDER.slice(0, 10));
+  assert(early.indexOf('SUN') >= 0 && early.indexOf('NAME') >= 0, '欧文 10 文字レベルで SUN, NAME が候補');
+  assert(early.indexOf('HELLO') < 0, 'H, L, O 未習得なら HELLO は候補外');
+  var all = Game.candidates('intl', Object.keys(Data.INTL_TABLE));
+  assertEq(all.length, Data.WORDS_INTL.length, '欧文全文字なら全語が候補(重複なし)');
+  var wa1 = Game.candidates('wabun', ['ア', 'イ', 'ウ', 'エ', 'オ']);
+  assert(wa1.length >= 5 && wa1.indexOf('アイウエオ') >= 0, '和文 Lv1 の候補: ' + wa1.join(','));
+  var waAll = Game.candidates('wabun', Object.keys(Data.WABUN_TABLE));
+  assert(waAll.indexOf('カ゛ツコウ') >= 0, 'ガッコウ は カ゛ツコウ に正規化されて候補');
+  assert(waAll.indexOf('モールス') >= 0, 'モールス(長音)が候補');
+  // 濁点レベル未習得なら濁点を含む語は候補外
+  var noMarks = Game.candidates('wabun', Data.WABUN_ORDER.slice(0, 10).reduce(function (a, g) { return a.concat(g.chars); }, []));
+  assert(noMarks.indexOf('カ゛ツコウ') < 0 && noMarks.indexOf('ラシ゛オ') < 0, '濁点未習得では濁点語を出さない');
+})();
+
+(function () {
+  // ランダム語: 2〜4 文字、レベル文字のみ、先頭は ゛゜ー 以外
+  var seq = [0.99, 0.0, 0.5, 0.99, 0.2, 0.7];
+  var i = 0;
+  var rnd = function () { return seq[i++ % seq.length]; };
+  var chars = ['カ', 'キ', '゛', 'ー'];
+  for (var k = 0; k < 50; k++) {
+    var w = Game.makeRandomWord(chars, Math.random);
+    assert(w.length >= 2 && w.length <= 4, 'ランダム語の長さ 2〜4: ' + w);
+    assert(w[0] !== '゛' && w[0] !== 'ー', 'ランダム語の先頭は記号以外: ' + w);
+    for (var j = 0; j < w.length; j++) { assert(chars.indexOf(w[j]) >= 0, 'ランダム語はレベル文字のみ: ' + w); }
+  }
+  assertEq(Game.makeRandomWord(['K', 'M'], rnd).length, 4, '乱数 0.99 → 4 文字');
+})();
+
+(function () {
+  var r = Game.summarize(30, 3, 60);
+  assertEq(r.cpm, 30, '60 秒で 30 文字 → 30 CPM');
+  assertEq(r.accuracy, 91, '30/33 → 91%');
+  assertEq(Game.summarize(0, 0, 60).accuracy, 0, '0 文字なら正答率 0');
+  assertEq(Game.summarize(10, 0, 30).cpm, 20, '30 秒で 10 文字 → 20 CPM');
 })();
 
 // ---------- 結果 ----------
