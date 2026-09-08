@@ -7,6 +7,7 @@ var Codec = require('../js/morse-codec.js');
 var createKeyer = require('../js/keyer.js');
 var Tree = require('../js/morse-tree.js');
 var Game = require('../js/typing-game.js');
+var I18n = require('../js/i18n.js');
 
 var failures = 0;
 var count = 0;
@@ -352,6 +353,49 @@ section('typing-game');
     for (var j = 0; j < w.length; j++) { count[w[j]]++; }
   }
   assert(count.Q > count.K && count.Q > count.M, '苦手文字 Q が多く出る: ' + JSON.stringify(count));
+})();
+
+// ---------- i18n ----------
+section('i18n');
+
+(function () {
+  var ja = I18n.DICT.ja;
+  var en = I18n.DICT.en;
+  var jaKeys = Object.keys(ja).sort();
+  var enKeys = Object.keys(en).sort();
+  assertEq(enKeys.join(','), jaKeys.join(','), 'ja / en の辞書キーが一致する');
+  assert(jaKeys.length > 100, '辞書キーが十分にある: ' + jaKeys.length);
+  jaKeys.forEach(function (k) {
+    assert(typeof ja[k] === 'string' && ja[k].length > 0, 'ja[' + k + '] が空でない');
+    assert(typeof en[k] === 'string' && en[k].length > 0, 'en[' + k + '] が空でない');
+    // プレースホルダ({n} 等)は両言語で同じ集合
+    var pj = (ja[k].match(/\{\w+\}/g) || []).sort().join(',');
+    var pe = (en[k].match(/\{\w+\}/g) || []).sort().join(',');
+    assertEq(pe, pj, k + ' のプレースホルダが ja / en で一致');
+  });
+  // 英語辞書に日本語(ひらがな・カタカナ・漢字)が残っていない(アプリ名・仮名の符号名は除く)
+  var allowJa = { 'app.title': 1, 'about.name': 1, 'ref.wabunHint': 1 };
+  enKeys.forEach(function (k) {
+    if (allowJa[k]) { return; }
+    // ・(U+30FB)と ー(U+30FC)は符号表記として英語でも使うので除外
+    assert(!/[ぁ-ゖァ-ヺ一-鿿]/.test(en[k]), 'en[' + k + '] に日本語が含まれない: ' + en[k]);
+  });
+
+  assertEq(I18n.getLang(), 'ja', '初期言語は ja');
+  assertEq(I18n.t('tab.rx'), '聞き取り', 'ja: tab.rx');
+  assertEq(I18n.t('rx.qnum', { n: 3, total: 10 }), '第 3 問 / 10', 'ja: プレースホルダ置換');
+  I18n.setLang('en');
+  assertEq(I18n.getLang(), 'en', 'setLang(en)');
+  assertEq(I18n.t('tab.rx'), 'Listen', 'en: tab.rx');
+  assertEq(I18n.t('rx.qnum', { n: 3, total: 10 }), 'Q 3 / 10', 'en: プレースホルダ置換');
+  assertEq(I18n.t('game.score', { c: 12, m: 1 }), '12 chars / 1 misses', 'en: game.score');
+  assertEq(I18n.t('no.such.key'), 'no.such.key', '未知キーはキー文字列を返す');
+  assertEq(I18n.t('rx.qnum', { n: 1 }), 'Q 1 / {total}', '未指定のプレースホルダはそのまま');
+  I18n.setLang('xx');
+  assertEq(I18n.getLang(), 'ja', '未知の言語は ja にフォールバック');
+  assertEq(I18n.normalize(undefined), 'ja', 'normalize(undefined) = ja(旧設定データ互換)');
+  assertEq(I18n.normalize('en'), 'en', 'normalize(en) = en');
+  assertEq(I18n.LANGS.join(','), 'ja,en', '対応言語は ja, en');
 })();
 
 // ---------- 結果 ----------

@@ -124,7 +124,8 @@ var MorseTree = (function () {
       svg = svgEl('svg', {
         width: L.width, height: L.height,
         viewBox: '0 0 ' + L.width + ' ' + L.height,
-        'class': 'tree-svg', role: 'img', 'aria-label': 'モールスツリー'
+        'class': 'tree-svg', role: 'img',
+        'aria-label': (typeof window !== 'undefined' && window.I18n) ? window.I18n.t('tree.aria') : 'Morse tree'
       });
       var edges = svgEl('g', { 'class': 'tree-edges' });
       var nodesG = svgEl('g', { 'class': 'tree-nodes' });

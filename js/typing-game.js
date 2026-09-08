@@ -13,6 +13,8 @@ var TypingGame = (function () {
   var isNode = (typeof module !== 'undefined' && typeof require === 'function');
   var Data = isNode ? require('./morse-data.js') : window.MorseData;
   var Codec = isNode ? require('./morse-codec.js') : window.MorseCodec;
+  var I18n = isNode ? require('./i18n.js') : window.I18n;
+  var tr = function (k, p) { return I18n.t(k, p); };
 
   var DURATIONS = [30, 60, 120];
   var MIN_CANDIDATES = 6; // これ未満ならランダム語で補う
@@ -169,27 +171,29 @@ var TypingGame = (function () {
       }
       box.appendChild(span);
     }
-    $('#tx-game-next').textContent = next ? '次: ' + next : '';
+    $('#tx-game-next').textContent = next ? tr('game.next', { w: next }) : '';
   }
 
   function renderScore() {
-    $('#tx-game-score').textContent = correct + ' 文字 / ミス ' + mistakes;
+    $('#tx-game-score').textContent = tr('game.score', { c: correct, m: mistakes });
   }
 
   function renderTime() {
     var remain = Math.max(0, endAt - performance.now());
-    $('#tx-game-time').textContent = '残り ' + Math.ceil(remain / 1000) + ' 秒';
+    $('#tx-game-time').textContent = tr('game.time', { n: Math.ceil(remain / 1000) });
     $('#tx-game-bar-fill').style.width = (remain / (duration * 1000) * 100) + '%';
   }
 
   function renderIdle() {
     var best = hooks.getBest();
     $('#tx-game-best').textContent = best
-      ? '自己ベスト(' + best.duration + '秒): ' + best.chars + ' 文字 / ' + best.cpm + ' CPM / 正答率 ' + best.accuracy + '%'
-      : '制限時間内にできるだけ多くの文字を打鍵しましょう';
+      ? tr('game.best', { d: best.duration, chars: best.chars, cpm: best.cpm, acc: best.accuracy })
+      : tr('game.hint');
     $('#tx-game-level-label').textContent = hooks.levelLabel();
     document.querySelectorAll('.tx-game-dur').forEach(function (b) {
-      b.classList.toggle('active', Number(b.getAttribute('data-dur')) === duration);
+      var d = Number(b.getAttribute('data-dur'));
+      b.textContent = tr('game.sec', { n: d });
+      b.classList.toggle('active', d === duration);
     });
     renderOptions();
   }
@@ -261,10 +265,10 @@ var TypingGame = (function () {
     var isBest = !best || best.duration !== duration || r.chars > best.chars;
     if (isBest) { hooks.setBest(r); }
     hooks.saveStats();
-    $('#tx-game-result-score').textContent = r.chars + ' 文字';
+    $('#tx-game-result-score').textContent = tr('game.resultChars', { n: r.chars });
     $('#tx-game-result-detail').textContent =
-      duration + ' 秒 / ミス ' + r.mistakes + ' / 正答率 ' + r.accuracy + '% / ' + r.cpm + ' CPM' +
-      (isBest && r.chars > 0 ? ' 🎉 自己ベスト' : '');
+      tr('game.resultDetail', { d: duration, m: r.mistakes, acc: r.accuracy, cpm: r.cpm }) +
+      (isBest && r.chars > 0 ? tr('game.newBest') : '');
     show('result');
   }
 
@@ -274,6 +278,12 @@ var TypingGame = (function () {
     state = 'idle';
     show('idle');
     renderIdle();
+  }
+
+  // 言語切替など: 状態を変えずに現在の画面の文字列を描き直す
+  function refresh() {
+    renderIdle();
+    if (state === 'play') { renderWord(false); renderScore(); renderTime(); }
   }
 
   // キーヤーから確定した符号を受け取る
@@ -354,7 +364,7 @@ var TypingGame = (function () {
     onChar: onChar,
     finish: finish,
     getState: function () { return state; },
-    refresh: renderIdle
+    refresh: refresh
   };
 })();
 

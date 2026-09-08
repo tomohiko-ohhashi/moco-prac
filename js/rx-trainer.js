@@ -8,6 +8,7 @@
 
 var RxTrainer = (function () {
   var $ = function (s) { return UI.$(s); };
+  var tr = function (k, p) { return I18n.t(k, p); };
 
   var session = null; // { total, index, correctCount, target, answer, phase }
   var playHandle = null;
@@ -146,7 +147,7 @@ var RxTrainer = (function () {
     session.answer = '';
     session.phase = 'play';
     session.index++;
-    $('#rx-qnum').textContent = '第 ' + session.index + ' 問 / ' + session.total;
+    $('#rx-qnum').textContent = tr('rx.qnum', { n: session.index, total: session.total });
     renderAnswer();
     showStage('rx-play');
     playMorse(MorseCodec.encode(session.target, UI.getMode()));
@@ -187,7 +188,7 @@ var RxTrainer = (function () {
       diff.appendChild(UI.el('span', a[j] === t[j] ? 'good' : 'bad', t[j]));
     }
     if (!allOk && a) {
-      var yours = UI.el('div', 'hint', 'あなたの回答: ' + a);
+      var yours = UI.el('div', 'hint', tr('rx.yours', { a: a }));
       yours.style.fontSize = '15px';
       diff.appendChild(yours);
     }
@@ -225,7 +226,7 @@ var RxTrainer = (function () {
       var li = UI.el('li');
       li.appendChild(UI.el('span', null,
         w.ch + '(' + MorseCodec.toDisplay(MorseCodec.encodeChar(w.ch, UI.getMode()) || '') + ')'));
-      li.appendChild(UI.el('span', null, '正答率 ' + Math.round(w.rate * 100) + '%'));
+      li.appendChild(UI.el('span', null, tr('rx.rate', { n: Math.round(w.rate * 100) })));
       list.appendChild(li);
     });
 
@@ -268,7 +269,7 @@ var RxTrainer = (function () {
       if (st.level < App.maxLevel()) {
         st.level++;
         App.saveStats();
-        UI.toast('レベルアップ! Lv ' + st.level);
+        UI.toast(tr('rx.levelUpToast', { n: st.level }));
       }
       endToIdle();
     });
@@ -315,6 +316,12 @@ var RxTrainer = (function () {
     UI.bus.on('modechange', endToIdle);
     UI.bus.on('settingschange', function () {
       if (!session) { renderHeader(); }
+    });
+    // 言語切替: 進行中の問題番号を描き直す(他の動的文字列は次の描画で反映)
+    UI.bus.on('langchange', function () {
+      if (session && session.phase === 'play') {
+        $('#rx-qnum').textContent = tr('rx.qnum', { n: session.index, total: session.total });
+      }
     });
     UI.bus.on('tabchange', function (t) {
       if (t !== 'rx') { stopPlay(); }

@@ -8,6 +8,7 @@
 
 var TxTrainer = (function () {
   var $ = function (s) { return UI.$(s); };
+  var tr = function (k, p) { return I18n.t(k, p); };
 
   var keyer = null;
   var pollTimer = null;
@@ -53,7 +54,7 @@ var TxTrainer = (function () {
     $('#tx-level-label').textContent = 'Lv ' + st.level + '/' + App.maxLevel();
     $('#tx-target-char').textContent = drill.target || '-';
     $('#tx-drill-score').textContent = drill.asked
-      ? '正解 ' + drill.correct + ' / ' + drill.asked : '';
+      ? tr('tx.drillScore', { c: drill.correct, a: drill.asked }) : '';
   }
 
   function applyInputMode() {
@@ -254,7 +255,7 @@ var TxTrainer = (function () {
     var b = $('#tx-target-auto');
     b.classList.toggle('active', on);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    b.textContent = on ? '自動🔊' : '自動';
+    b.textContent = tr('tx.auto') + (on ? '🔊' : '');
   }
 
   function judgeDrill() {
@@ -269,8 +270,10 @@ var TxTrainer = (function () {
     renderDrill();
     var box = $('#tx-decoded');
     box.style.borderColor = ok ? 'var(--ok)' : 'var(--ng)';
-    UI.toast(ok ? '○ 正解' : '× 正解は ' + drill.target + ' ' +
-      MorseCodec.toDisplay(MorseCodec.encodeChar(drill.target, UI.getMode()) || ''));
+    UI.toast(ok ? tr('tx.correct') : tr('tx.wrong', {
+      ch: drill.target,
+      code: MorseCodec.toDisplay(MorseCodec.encodeChar(drill.target, UI.getMode()) || '')
+    }));
     setTimeout(function () {
       box.style.borderColor = '';
       if (submode === 'drill') { nextTarget(); }
@@ -439,6 +442,11 @@ var TxTrainer = (function () {
       applyInputMode();
       renderAutoPlay();
       if (submode === 'tree' && UI.getTab() === 'tx') { renderTree(); }
+    });
+    UI.bus.on('langchange', function () {
+      renderDrill();
+      renderAutoPlay();
+      TypingGame.refresh();
     });
     UI.bus.on('modechange', function () {
       drill.asked = 0;

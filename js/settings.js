@@ -7,17 +7,20 @@
 
 var Settings = (function () {
   var $ = function (s) { return UI.$(s); };
+  var tr = function (k, p) { return I18n.t(k, p); };
   var wakeLock = null;
 
   function render() {
     var s = App.settings;
+    $('#set-lang-ja').classList.toggle('active', I18n.normalize(s.lang) === 'ja');
+    $('#set-lang-en').classList.toggle('active', I18n.normalize(s.lang) === 'en');
     $('#set-freq').value = s.audio.freq;
     $('#set-freq-label').textContent = s.audio.freq + ' Hz';
     $('#set-volume').value = s.audio.volume;
     $('#set-volume-label').textContent = s.audio.volume + '%';
     $('#set-charwpm-label').textContent = s.rx.charWpm + ' wpm';
     $('#set-effwpm-label').textContent = s.rx.effWpm + ' wpm';
-    $('#set-questions-label').textContent = s.rx.questions + ' 問';
+    $('#set-questions-label').textContent = tr('set.questionsUnit', { n: s.rx.questions });
     UI.$all('.set-group').forEach(function (b) {
       b.classList.toggle('active', Number(b.getAttribute('data-group')) === s.rx.groupSize);
     });
@@ -52,16 +55,16 @@ var Settings = (function () {
     box.textContent = '';
     var table = UI.el('table');
     var head = UI.el('tr');
-    ['', 'レベル', 'セッション', '文字正答率'].forEach(function (h) { head.appendChild(UI.el('th', null, h)); });
+    ['', tr('set.statLevel'), tr('set.statSessions'), tr('set.statRate')].forEach(function (h) { head.appendChild(UI.el('th', null, h)); });
     table.appendChild(head);
-    [['聞き取り・欧文', App.stats.rx.intl], ['聞き取り・和文', App.stats.rx.wabun],
-     ['打鍵・欧文', App.stats.tx.intl], ['打鍵・和文', App.stats.tx.wabun]].forEach(function (row) {
-      var tr = UI.el('tr');
-      tr.appendChild(UI.el('td', null, row[0]));
-      tr.appendChild(UI.el('td', null, String(row[1].level)));
-      tr.appendChild(UI.el('td', null, String(row[1].sessions)));
-      tr.appendChild(UI.el('td', null, rateOf(row[1].chars)));
-      table.appendChild(tr);
+    [[tr('set.statRxIntl'), App.stats.rx.intl], [tr('set.statRxWabun'), App.stats.rx.wabun],
+     [tr('set.statTxIntl'), App.stats.tx.intl], [tr('set.statTxWabun'), App.stats.tx.wabun]].forEach(function (row) {
+      var line = UI.el('tr');
+      line.appendChild(UI.el('td', null, row[0]));
+      line.appendChild(UI.el('td', null, String(row[1].level)));
+      line.appendChild(UI.el('td', null, String(row[1].sessions)));
+      line.appendChild(UI.el('td', null, rateOf(row[1].chars)));
+      table.appendChild(line);
     });
     box.appendChild(table);
   }
@@ -78,7 +81,7 @@ var Settings = (function () {
       wakeLock = lock;
       lock.addEventListener('release', function () { wakeLock = null; });
     }).catch(function () {
-      UI.toast('スリープ防止を有効にできませんでした');
+      UI.toast(tr('set.wakeLockFail'));
     });
   }
 
@@ -96,6 +99,13 @@ var Settings = (function () {
     // 他画面(課題行の「自動」ボタン等)からの変更をスイッチに反映
     UI.bus.on('settingschange', render);
     var s = App.settings;
+
+    $('#set-lang-ja').addEventListener('click', function () {
+      s.lang = 'ja'; App.saveSettings(); render();
+    });
+    $('#set-lang-en').addEventListener('click', function () {
+      s.lang = 'en'; App.saveSettings(); render();
+    });
 
     $('#set-freq').addEventListener('input', function (e) {
       s.audio.freq = clamp(Number(e.target.value), 400, 1000);
@@ -167,14 +177,14 @@ var Settings = (function () {
     }
 
     $('#set-reset-stats').addEventListener('click', function () {
-      if (!window.confirm('学習統計(レベル・正答率)をリセットします。よろしいですか?')) { return; }
+      if (!window.confirm(tr('set.resetStatsConfirm'))) { return; }
       App.resetStats();
-      UI.toast('統計をリセットしました');
+      UI.toast(tr('set.resetStatsDone'));
       UI.bus.emit('modechange', UI.getMode()); // 各画面を再描画
       render();
     });
     $('#set-reset-all').addEventListener('click', function () {
-      if (!window.confirm('設定・統計をすべて削除して初期状態に戻します。よろしいですか?')) { return; }
+      if (!window.confirm(tr('set.resetAllConfirm'))) { return; }
       App.resetAll();
       location.reload();
     });
