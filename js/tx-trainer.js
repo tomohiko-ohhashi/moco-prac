@@ -69,6 +69,40 @@ var TxTrainer = (function () {
     return r.text || '';
   }
 
+  // ツリーの 1 行の高さ: 打鍵タブの残り高さから逆算し、パッドの最低高を確保する
+  function treeRowHeight() {
+    var tab = $('#tab-tx');
+    var svgEl = $('#tx-tree svg');
+    var tabH = tab.clientHeight;
+    if (!tabH || !svgEl || !treeView) { return 46; }
+    var rows = treeView.rows();               // 部分木の根を含む段数(5)
+    var svgH = svgEl.getBoundingClientRect().height;
+    // 横画面は左右 2 カラム(パッドは右)なので、左カラムの要素だけを差し引く
+    var twoCol = getComputedStyle($('.tx-col-a')).display === 'flex';
+    var cols = twoCol ? [$('.tx-col-a')] : [$('.tx-col-a'), $('.tx-col-b')];
+    var fixed = 0;
+    cols.forEach(function (col) {
+      Array.prototype.forEach.call(col.children, function (el) {
+        if (el.hidden || el.id === 'tx-pad' || el.id === 'tx-paddle') { return; }
+        var cs = getComputedStyle(el);
+        if (cs.display === 'none') { return; }
+        fixed += el.getBoundingClientRect().height + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+      });
+    });
+    fixed -= svgH;
+    var PAD_MIN = twoCol ? 0 : 120;
+    var avail = tabH - fixed - PAD_MIN;           // SVG に使える高さ
+    var rowH = Math.floor((avail - treeView.TOP_PAD - 16) / (rows - 1));
+    return Math.max(twoCol ? 20 : 26, Math.min(46, rowH));
+  }
+
+  function renderHalfToggle(prefix) {
+    var wabun = UI.getMode() === 'wabun';
+    $('#tx-tree-half').hidden = !wabun;
+    $('#tx-half-dit').classList.toggle('active', prefix === '.');
+    $('#tx-half-dah').classList.toggle('active', prefix === '-');
+  }
+
   function renderTree() {
     if (!treeView) {
       treeView = MorseTree.createTreeView($('#tx-tree'), {
@@ -83,16 +117,24 @@ var TxTrainer = (function () {
           });
           treeView.flash(node.code);
           $('#tx-tree-result').textContent = node.char || treeResultFor(node.code);
-        }
+        },
+        onPrefixChange: renderHalfToggle
       });
     }
-    treeView.render(UI.getMode());
+    var wabun = UI.getMode() === 'wabun';
+    var prefix = wabun ? (treeView.getPrefix() || '.') : '';
+    // 一度描いてから残り高さを測り、行の高さを決めて描き直す
+    treeView.render(UI.getMode(), { prefix: prefix, rowH: 46 });
+    var rowH = treeRowHeight();
+    if (rowH !== 46) { treeView.render(UI.getMode(), { prefix: prefix, rowH: rowH }); }
     $('#tx-tree-result').textContent = '';
+    $('#tx-tree-buffer').textContent = '';
   }
 
   function treeOnElement() {
     if (submode !== 'tree' || !treeView) { return; }
     treeView.setPath(keyer.getBuffer());
+    $('#tx-tree-buffer').textContent = MorseCodec.toDisplay(keyer.getBuffer());
   }
 
   function treeOnChar(code) {
@@ -100,6 +142,7 @@ var TxTrainer = (function () {
     treeView.flash(code);
     var ch = treeResultFor(code);
     $('#tx-tree-result').textContent = ch;
+    $('#tx-tree-buffer').textContent = '';
   }
 
   // ---------- キーヤー ----------
@@ -178,6 +221,7 @@ var TxTrainer = (function () {
     renderDecoded();
     if (treeView) { treeView.clear(); }
     $('#tx-tree-result').textContent = '';
+    $('#tx-tree-buffer').textContent = '';
   }
 
   // ---------- 課題モード ----------
@@ -313,8 +357,11 @@ var TxTrainer = (function () {
     $('#tx-mode-free').addEventListener('click', function () { setSubmode('free'); });
     $('#tx-mode-drill').addEventListener('click', function () { setSubmode('drill'); });
     $('#tx-mode-tree').addEventListener('click', function () { setSubmode('tree'); });
+    $('#tx-tree-clear').addEventListener('click', clearAll);
+    $('#tx-half-dit').addEventListener('click', function () { if (treeView) { treeView.setPrefix('.'); } });
+    $('#tx-half-dah').addEventListener('click', function () { if (treeView) { treeView.setPrefix('-'); } });
     window.addEventListener('resize', function () {
-      if (submode !== 'tree') { return; }
+      if (submode !== 'tree' || UI.getTab() !== 'tx') { return; }
       if (resizeTimer) { clearTimeout(resizeTimer); }
       resizeTimer = setTimeout(renderTree, 150);
     });
@@ -332,6 +379,7 @@ var TxTrainer = (function () {
     UI.bus.on('settingschange', function () {
       keyer.setOptions({ unitMs: unitMs(), slow: App.settings.tx.slow });
       applyInputMode();
+      if (submode === 'tree' && UI.getTab() === 'tx') { renderTree(); }
     });
     UI.bus.on('modechange', function () {
       drill.asked = 0;
@@ -340,6 +388,8 @@ var TxTrainer = (function () {
       if (submode === 'tree') { renderTree(); }
     });
     UI.bus.on('tabchange', function (t) {
+      // 打鍵タブは 3 モードとも画面内に収める(ページスクロールなし、パッドが残りを埋める)
+      document.body.classList.toggle('fit-tx', t === 'tx');
       if (t === 'tx') {
         startPolling();
         // 非表示中は幅が 0 なので、表示されてからツリーを描く

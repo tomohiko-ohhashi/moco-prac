@@ -17,7 +17,7 @@
   --tap: 48px;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; touch-action: manipulation; }
 [hidden] { display: none !important; }
 
 html, body {
@@ -35,6 +35,15 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  /* スマホの長押しメニュー・テキスト選択を出さない(入力欄は除く) */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 button {
@@ -272,6 +281,51 @@ section.tab-panel h2 {
 }
 
 /* ---------- 打鍵 ---------- */
+/* 打鍵タブ表示中はページをスクロールさせず、パッドが残りの高さを埋める */
+body.fit-tx { height: 100vh; height: 100dvh; overflow: hidden; }
+body.fit-tx main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 10px;
+  padding-bottom: calc(68px + env(safe-area-inset-bottom));
+}
+body.fit-tx #tab-tx {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+/* 縦画面では左右カラムの箱を透過させ、従来どおり縦一列に並べる */
+.tx-col { display: contents; }
+#tab-tx .card { margin-bottom: 10px; }
+#tab-tx .tx-decoded { margin: 0 0 4px; flex: none; }
+#tab-tx .tx-buffer { flex: none; }
+#tab-tx .tx-bottom { flex: none; margin-top: 10px; }
+/* 横画面(低い画面)は 2 カラム: 左=モード切替(+課題/ツリー)、右=デコード欄+パッド+クリア */
+@media (orientation: landscape) and (max-height: 560px) {
+  body.fit-tx .app-header { padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: 4px; }
+  body.fit-tx .app-header h1 { font-size: 16px; }
+  body.fit-tx .mode-toggle button { min-height: 32px; padding: 2px 14px; }
+  body.fit-tx .tab-bar button { min-height: 40px; flex-direction: row; gap: 6px; padding: 4px; font-size: 12px; }
+  body.fit-tx .tab-bar button .icon { font-size: 16px; }
+  body.fit-tx main { padding-top: 6px; padding-bottom: calc(46px + env(safe-area-inset-bottom)); }
+  body.fit-tx #tab-tx { flex-direction: row; gap: 12px; }
+  body.fit-tx .tx-col { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; min-height: 0; }
+  body.fit-tx #tab-tx .card { padding: 8px; margin-bottom: 8px; }
+  body.fit-tx #tab-tx .tx-tree-head { min-height: 32px; }
+  body.fit-tx #tab-tx .tx-decoded { min-height: 44px; font-size: 22px; }
+  body.fit-tx #tab-tx .tx-buffer { min-height: 20px; font-size: 16px; margin-bottom: 4px; }
+  body.fit-tx #tab-tx .tx-pad,
+  body.fit-tx #tab-tx .tx-paddle { min-height: 0; }
+  body.fit-tx #tab-tx .tx-paddle button { min-height: 0; }
+  body.fit-tx #tab-tx .tx-bottom { margin-top: 8px; }
+  body.fit-tx #tab-tx .tx-bottom button { min-height: 40px; }
+}
+}
+}
+}
 .seg {
   display: flex;
   border: 1px solid var(--border);
@@ -315,6 +369,8 @@ section.tab-panel h2 {
 
 .tx-pad {
   height: 200px;
+  flex: 1 1 auto;
+  min-height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -335,10 +391,11 @@ section.tab-panel h2 {
   color: var(--text);
 }
 
-.tx-paddle { display: flex; gap: 12px; }
+.tx-paddle { display: flex; gap: 12px; flex: 1 1 auto; min-height: 110px; }
 .tx-paddle button {
   flex: 1;
-  height: 200px;
+  height: auto;
+  min-height: 110px;
   font-size: 44px;
   border-radius: 18px;
   touch-action: none;
@@ -350,22 +407,34 @@ section.tab-panel h2 {
 .tx-target-char { font-size: 34px; font-weight: 700; margin: 0 8px; }
 
 /* モールスツリー */
-.tx-tree-wrap { padding: 8px 8px 4px; }
-.tx-tree-wrap .row { margin-bottom: 4px; }
+.tx-tree-wrap { padding: 6px 8px 2px; flex: none; }
+.tx-tree-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+.tx-tree-half { flex: none; }
+.tx-tree-half button { min-height: 32px; padding: 2px 10px; font-size: 14px; white-space: nowrap; }
+.tx-tree-buffer {
+  flex: 1;
+  color: var(--accent);
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+}
 .tx-tree-result {
-  min-width: 44px;
+  min-width: 40px;
   text-align: center;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--warn);
   line-height: 1;
 }
-.tx-tree {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-}
+.tx-tree-clear { min-height: 32px; padding: 2px 10px; font-size: 13px; }
+.tx-tree { overflow: hidden; }
 .tree-svg { display: block; }
 .tree-edge { stroke: var(--border); stroke-width: 2; }
 .tree-edge.path { stroke: var(--accent); stroke-width: 3; }
@@ -379,7 +448,7 @@ section.tab-panel h2 {
 .tree-node.hit .tree-label { fill: #12161c; }
 .tree-label { fill: var(--text); font-weight: 700; pointer-events: none; }
 .tree-hint { fill: var(--muted); }
-.tx-tree-active .tx-pad, .tx-tree-active .tx-paddle button { height: 150px; }
+.tx-tree-active .tx-decoded, .tx-tree-active .tx-buffer, .tx-tree-active .tx-bottom { display: none; }
 
 /* ---------- 符号表 ---------- */
 textarea {
@@ -524,6 +593,3 @@ input[type="range"] {
 }
 #toast.show { opacity: 1; }
 
-@media (min-width: 480px) {
-  .tx-pad, .tx-paddle button { height: 240px; }
-}
