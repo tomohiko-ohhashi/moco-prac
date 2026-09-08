@@ -1,0 +1,18 @@
+{
+  "name": "モールス練習",
+  "short_name": "モールス練習",
+  "description": "モールス信号の聞き取り・打鍵練習アプリ(欧文・和文対応)",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#12161c",
+  "theme_color": "#171d26",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
