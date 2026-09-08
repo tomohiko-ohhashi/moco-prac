@@ -15,7 +15,7 @@
   var DEFAULT_SETTINGS = {
     audio: { freq: 700, volume: 70 },
     rx: { charWpm: 18, effWpm: 12, questions: 10, groupSize: 1 },
-    tx: { wpm: 15, input: 'straight', slow: false },
+    tx: { wpm: 15, input: 'straight', slow: false, autoPlay: true },
     screen: { wakeLock: false }
   };
 

@@ -103,6 +103,7 @@
           <span><span class="label">お題:</span><span id="tx-target-char" class="tx-target-char">-</span></span>
           <span>
             <button id="tx-target-play" type="button">🔊 聞く</button>
+            <button id="tx-target-auto" class="tx-auto" type="button" aria-pressed="false" title="お題が変わったら自動で再生">自動</button>
             <button id="tx-target-skip" type="button">スキップ</button>
           </span>
         </div>
@@ -240,6 +241,13 @@
           <span class="knob"></span>
         </label>
       </div>
+      <div class="setting-row">
+        <span class="name">お題を自動再生<br><small class="label">課題モードでお題が変わるたびに符号を鳴らす</small></span>
+        <label class="switch">
+          <input type="checkbox" id="set-autoplay">
+          <span class="knob"></span>
+        </label>
+      </div>
     </div>
 
     <div class="card" id="set-screen-card">
@@ -265,7 +273,7 @@
     <div class="card about">
       <h2>このアプリについて</h2>
       <p style="font-size:14px">
-        モールス練習 v1.2.1<br>
+        モールス練習 v1.3.0<br>
         欧文・和文対応のモールス信号練習アプリ。オフラインでも動作します。<br>
         <a href="https://github.com/tomohiko-ohhashi/moco-prac" target="_blank" rel="noopener">GitHub リポジトリ</a>
       </p>

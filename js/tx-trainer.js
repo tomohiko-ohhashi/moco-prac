@@ -237,6 +237,18 @@ var TxTrainer = (function () {
     drill.judging = false;
     clearAll();
     renderDrill();
+    // お題の自動再生(打鍵タブ表示中のみ。初期化時の復元では鳴らさない)
+    if (App.settings.tx.autoPlay && submode === 'drill' && UI.getTab() === 'tx') {
+      playTarget();
+    }
+  }
+
+  function renderAutoPlay() {
+    var on = !!App.settings.tx.autoPlay;
+    var b = $('#tx-target-auto');
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.textContent = on ? '自動🔊' : '自動';
   }
 
   function judgeDrill() {
@@ -367,6 +379,13 @@ var TxTrainer = (function () {
     });
     $('#tx-target-play').addEventListener('click', playTarget);
     $('#tx-target-skip').addEventListener('click', nextTarget);
+    $('#tx-target-auto').addEventListener('click', function () {
+      App.settings.tx.autoPlay = !App.settings.tx.autoPlay;
+      App.saveSettings(); // settingschange → 設定タブのスイッチも同期
+      renderAutoPlay();
+      if (App.settings.tx.autoPlay) { playTarget(); }
+    });
+    renderAutoPlay();
     $('#tx-level-down').addEventListener('click', function () {
       var st = App.modeStats('tx');
       if (st.level > 1) { st.level--; App.saveStats(); nextTarget(); }
@@ -379,6 +398,7 @@ var TxTrainer = (function () {
     UI.bus.on('settingschange', function () {
       keyer.setOptions({ unitMs: unitMs(), slow: App.settings.tx.slow });
       applyInputMode();
+      renderAutoPlay();
       if (submode === 'tree' && UI.getTab() === 'tx') { renderTree(); }
     });
     UI.bus.on('modechange', function () {
