@@ -5,6 +5,7 @@
 var Data = require('../js/morse-data.js');
 var Codec = require('../js/morse-codec.js');
 var createKeyer = require('../js/keyer.js');
+var Tree = require('../js/morse-tree.js');
 
 var failures = 0;
 var count = 0;
@@ -227,6 +228,45 @@ section('keyer');
   k.down(0);
   k.cancel(50);
   assert(!k.isDown(), 'cancel で押下解除');
+})();
+
+// ---------- モールスツリー ----------
+section('morse-tree');
+
+(function () {
+  var t = Tree.build('intl');
+  assertEq(t.depth, 4, '欧文ツリーの深さ 4');
+  assertEq(t.leaves, 16, '欧文ツリーの葉 16');
+  assertEq(t.nodes.length, 31, '欧文ツリーのノード数 31 (根 + 2+4+8+16)');
+  var withChar = t.nodes.filter(function (n) { return n.char; }).length;
+  assertEq(withChar, 26, '欧文ツリーは A-Z の 26 文字を配置');
+  assertEq(t.byCode['-.-'].char, 'K', "'-.-' → K");
+  assertEq(t.byCode['.'].char, 'E', "'.' → E");
+  assertEq(t.byCode['-'].char, 'T', "'-' → T");
+  assertEq(t.byCode['.'].x, 0.25, '短点側は左(x=0.25)');
+  assertEq(t.byCode['-'].x, 0.75, '長点側は右(x=0.75)');
+  assertEq(t.byCode['..'].x, 0.125, "'..' の横位置 0.125");
+  assert(t.byCode['-'].dah && !t.byCode['.'].dah, 'dah フラグ');
+  assertEq(t.byCode['..--'].char, null, "'..--' は欧文では空ノード");
+  assertEq(Tree.parentCode('-.-'), '-.', '親符号');
+  // 全ノードの符号が index と整合する(左=短点)
+  t.nodes.forEach(function (n) {
+    if (n.depth === 0) { return; }
+    var bits = n.code.replace(/\./g, '0').replace(/-/g, '1');
+    assertEq(parseInt(bits, 2), n.index, 'index と符号の対応: ' + n.code);
+  });
+})();
+
+(function () {
+  var t = Tree.build('wabun');
+  assertEq(t.depth, 5, '和文ツリーの深さ 5');
+  assertEq(t.nodes.length, 63, '和文ツリーのノード数 63');
+  var withChar = t.nodes.filter(function (n) { return n.char; }).length;
+  assertEq(withChar, 51, '和文ツリーは 5 要素以下の 51 文字(カナ48 + ゛゜ー)');
+  assertEq(t.byCode['.-'].char, 'イ', "'.-' → イ");
+  assertEq(t.byCode['..'].char, '゛', "'..' → ゛");
+  assertEq(t.byCode['--.--'].char, 'ア', "'--.--' → ア");
+  assert(!t.byCode['.-.-.-'], '6 要素の記号はツリー外');
 })();
 
 // ---------- 結果 ----------

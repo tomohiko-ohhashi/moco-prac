@@ -349,6 +349,38 @@ section.tab-panel h2 {
 
 .tx-target-char { font-size: 34px; font-weight: 700; margin: 0 8px; }
 
+/* モールスツリー */
+.tx-tree-wrap { padding: 8px 8px 4px; }
+.tx-tree-wrap .row { margin-bottom: 4px; }
+.tx-tree-result {
+  min-width: 44px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--warn);
+  line-height: 1;
+}
+.tx-tree {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+.tree-svg { display: block; }
+.tree-edge { stroke: var(--border); stroke-width: 2; }
+.tree-edge.path { stroke: var(--accent); stroke-width: 3; }
+.tree-node { cursor: pointer; }
+.tree-shape { fill: var(--surface2); stroke: var(--muted); stroke-width: 1.5; }
+.tree-node.empty .tree-shape { fill: transparent; stroke: var(--border); stroke-dasharray: 3 2; }
+.tree-node.root .tree-shape { fill: var(--muted); stroke: none; }
+.tree-node.path .tree-shape { stroke: var(--accent); fill: var(--accent-dim); }
+.tree-node.cur .tree-shape { stroke: var(--warn); stroke-width: 3; fill: #3a3520; }
+.tree-node.hit .tree-shape { fill: var(--warn); stroke: var(--warn); }
+.tree-node.hit .tree-label { fill: #12161c; }
+.tree-label { fill: var(--text); font-weight: 700; pointer-events: none; }
+.tree-hint { fill: var(--muted); }
+.tx-tree-active .tx-pad, .tx-tree-active .tx-paddle button { height: 150px; }
+
 /* ---------- 符号表 ---------- */
 textarea {
   width: 100%;
