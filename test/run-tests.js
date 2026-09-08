@@ -293,6 +293,8 @@ section('typing-game');
   var early = Game.candidates('intl', Data.KOCH_ORDER.slice(0, 10));
   assert(early.indexOf('SUN') >= 0 && early.indexOf('NAME') >= 0, '欧文 10 文字レベルで SUN, NAME が候補');
   assert(early.indexOf('HELLO') < 0, 'H, L, O 未習得なら HELLO は候補外');
+  assert(Data.WORDS_INTL.length >= 450, '欧文単語リストは 450 語以上: ' + Data.WORDS_INTL.length);
+  assert(Data.WORDS_INTL.indexOf('HOUSE') >= 0 && Data.WORDS_INTL.indexOf('FRIEND') >= 0, '一般的な英単語を含む');
   var all = Game.candidates('intl', Object.keys(Data.INTL_TABLE));
   assertEq(all.length, Data.WORDS_INTL.length, '欧文全文字なら全語が候補(重複なし)');
   var wa1 = Game.candidates('wabun', ['ア', 'イ', 'ウ', 'エ', 'オ']);
