@@ -8,6 +8,7 @@
 
 var Reference = (function () {
   var $ = function (s) { return UI.$(s); };
+  var tr = function (k, p) { return I18n.t(k, p); };
   var playHandle = null;
   var updating = false; // 双方向変換のループ防止
   var previewChips = [];
@@ -49,7 +50,7 @@ var Reference = (function () {
       var chip = UI.el('span', 'chip');
       chip.appendChild(UI.el('span', null, t.char));
       chip.appendChild(UI.el('small', null, MorseCodec.toDisplay(t.code)));
-      if (t.unknown) { chip.title = '未知の符号'; }
+      if (t.unknown) { chip.title = I18n.t('ref.unknown'); }
       box.appendChild(chip);
       previewChips.push(chip);
     });
@@ -77,7 +78,7 @@ var Reference = (function () {
     Audio2.ensureAudio();
     stopPlay();
     var morse = MorseCodec.normalizeMorse($('#conv-morse').value);
-    if (!morse) { UI.toast('変換するテキストを入力してください'); return; }
+    if (!morse) { UI.toast(tr('ref.empty')); return; }
     var tl = MorseCodec.computeTimeline(morse, playOpts());
     $('#conv-play').hidden = true;
     $('#conv-stop').hidden = false;
@@ -121,15 +122,15 @@ var Reference = (function () {
 
   function renderIntlTables(root) {
     var T = MorseData.INTL_TABLE;
-    var letters = section('文字', root);
+    var letters = section(tr('ref.letters'), root);
     'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function (ch) {
       letters.appendChild(cell(ch, T[ch]));
     });
-    var digits = section('数字', root);
+    var digits = section(tr('ref.digits'), root);
     '1234567890'.split('').forEach(function (ch) {
       digits.appendChild(cell(ch, T[ch]));
     });
-    var marks = section('記号', root);
+    var marks = section(tr('ref.marks'), root);
     ['.', ',', '?', "'", '!', '/', '(', ')', ':', ';', '=', '+', '-', '"', '@'].forEach(function (ch) {
       marks.appendChild(cell(ch, T[ch]));
     });
@@ -137,7 +138,7 @@ var Reference = (function () {
 
   function renderWabunTables(root) {
     var T = MorseData.WABUN_TABLE;
-    var kana = section('五十音', root);
+    var kana = section(tr('ref.kana'), root);
     kana.style.gridTemplateColumns = 'repeat(5, 1fr)';
     MorseData.GOJUON_DISPLAY.forEach(function (row) {
       for (var i = 0; i < 5; i++) {
@@ -150,28 +151,27 @@ var Reference = (function () {
         }
       }
     });
-    var marks = section('濁点・記号', root);
-    [['゛', '濁点'], ['゜', '半濁点'], ['ー', '長音'], ['、', '区切点'],
-     ['」', '段落'], ['（', '下向括弧'], ['）', '上向括弧']].forEach(function (p) {
+    var marks = section(tr('ref.wabunMarks'), root);
+    [['゛', 'ref.dakuten'], ['゜', 'ref.handakuten'], ['ー', 'ref.choon'], ['、', 'ref.kugiri'],
+     ['」', 'ref.danraku'], ['（', 'ref.parenOpen'], ['）', 'ref.parenClose']].forEach(function (p) {
       var c = cell(p[0], T[p[0]]);
-      c.title = p[1];
+      c.title = tr(p[1]);
       marks.appendChild(c);
     });
-    var pro = section('特殊符号', root);
+    var pro = section(tr('ref.prosigns'), root);
     pro.appendChild(cell('ホレ', MorseData.WABUN_PROSIGNS['ホレ']));
     pro.appendChild(cell('ラタ', MorseData.WABUN_PROSIGNS['ラタ']));
-    root.appendChild(UI.el('p', 'hint',
-      'ホレ=本文開始、ラタ=本文終了。濁音・半濁音は「カ ゛」のように清音の後に濁点を打ちます。'));
+    root.appendChild(UI.el('p', 'hint', tr('ref.wabunHint')));
   }
 
   function renderTables() {
     var root = $('#ref-tables');
     root.textContent = '';
     if (UI.getMode() === 'intl') {
-      $('#ref-table-title').textContent = '欧文符号表';
+      $('#ref-table-title').textContent = tr('ref.intlTitle');
       renderIntlTables(root);
     } else {
-      $('#ref-table-title').textContent = '和文符号表';
+      $('#ref-table-title').textContent = tr('ref.wabunTitle');
       renderWabunTables(root);
     }
   }
@@ -192,8 +192,12 @@ var Reference = (function () {
       renderTables();
       fromText();
     });
-    UI.bus.on('tabchange', function (t) {
-      if (t !== 'ref') { stopPlay(); }
+    UI.bus.on('tabchange', function (tab) {
+      if (tab !== 'ref') { stopPlay(); }
+    });
+    UI.bus.on('langchange', function () {
+      renderTables();
+      fromText(); // プレビューのツールチップ(未知の符号)も描き直す
     });
     renderTables();
   }

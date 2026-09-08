@@ -36,7 +36,9 @@
 - 符号表のセルをタップするとその符号が鳴ります(和文は五十音・濁点/記号・ホレ/ラタ)
 
 ### ⚙️ 設定
-音(周波数 400–1000 Hz、音量)/ 聞き取り(文字速度・実効速度・出題数・出題文字数)/ 打鍵(判定速度・入力方式・ゆっくり確定)/ 画面(スリープ防止)/ 統計の表示とリセット。設定と学習統計は端末内(localStorage)に保存されます。
+言語(日本語 / English)/ 音(周波数 400–1000 Hz、音量)/ 聞き取り(文字速度・実効速度・出題数・出題文字数)/ 打鍵(判定速度・入力方式・ゆっくり確定・お題を自動再生)/ 画面(スリープ防止)/ 統計の表示とリセット。設定と学習統計は端末内(localStorage)に保存されます。
+
+言語を切り替えると、タブ・ボタン・設定項目・符号表の見出し・ゲームの表示などアプリ内の文字列がすぐに切り替わります(アプリ名「もこぷらっ！」とカナはそのまま)。既定は日本語です。
 
 ## GitHub Pages で公開する
 
@@ -72,13 +74,14 @@ npx http-server -p 8080 .
 | `js/morse-tree.js` | モールスツリー(二分木)の構築・座標計算と SVG 描画 |
 | `js/typing-game.js` | タイピングゲーム(出題語の選定・スコア計算・状態機械) |
 | `js/keyer.js` | 打鍵の長短・間隔判定ステートマシン |
+| `js/i18n.js` | 表示言語(日本語 / English)の辞書と `data-i18n` 適用 |
 | `js/storage.js` / `js/audio.js` / `js/ui-common.js` | 保存・音・UI 共通 |
 | `js/rx-trainer.js` / `js/tx-trainer.js` / `js/reference.js` / `js/settings.js` | 各画面 |
 | `js/app.js` | 起動処理・Service Worker 登録 |
 | `sw.js` / `manifest.webmanifest` / `icons/` | PWA |
 | `test/run-tests.js` | セルフテスト |
 
-上記 3 つのロジックファイルは Node でもブラウザでも読み込めます(テストは Node で実行)。
+`morse-data` / `morse-codec` / `morse-tree` / `typing-game` / `keyer` / `i18n` は Node でもブラウザでも読み込めます(テストは Node で実行)。
 
 ### ファイルを更新したとき
 
