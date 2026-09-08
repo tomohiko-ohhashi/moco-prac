@@ -89,6 +89,7 @@
         <button id="tx-mode-free" class="active" type="button">自由打鍵</button>
         <button id="tx-mode-drill" type="button">課題</button>
         <button id="tx-mode-tree" type="button">ツリー</button>
+        <button id="tx-mode-game" type="button">ゲーム</button>
       </div>
       <div id="tx-drill-row" style="margin-top:10px" hidden>
         <div class="row">
@@ -121,6 +122,42 @@
         <button id="tx-tree-clear" class="tx-tree-clear" type="button">クリア</button>
       </div>
       <div id="tx-tree" class="tx-tree"></div>
+    </div>
+
+    <div id="tx-game-wrap" class="card tx-game-wrap" hidden>
+      <div class="row tx-game-head">
+        <div class="stepper" aria-label="レベル">
+          <button id="tx-game-level-down" type="button" aria-label="レベルを下げる">−</button>
+          <span class="val" id="tx-game-level-label">Lv 1</span>
+          <button id="tx-game-level-up" type="button" aria-label="レベルを上げる">＋</button>
+        </div>
+        <div class="seg tx-game-durs" role="group" aria-label="制限時間">
+          <button class="tx-game-dur" data-dur="30" type="button">30秒</button>
+          <button class="tx-game-dur active" data-dur="60" type="button">60秒</button>
+          <button class="tx-game-dur" data-dur="120" type="button">120秒</button>
+        </div>
+      </div>
+      <div id="tx-game-idle">
+        <button id="tx-game-start" class="big-btn primary" type="button">▶ スタート</button>
+        <p id="tx-game-best" class="hint"></p>
+      </div>
+      <div id="tx-game-play" hidden>
+        <div class="tx-game-bar"><div id="tx-game-bar-fill"></div></div>
+        <div class="row tx-game-status">
+          <span id="tx-game-time" class="label"></span>
+          <span id="tx-game-score" class="label"></span>
+        </div>
+        <div id="tx-game-word" class="tx-game-word" aria-live="polite"></div>
+        <div id="tx-game-next" class="tx-game-next"></div>
+      </div>
+      <div id="tx-game-result" hidden>
+        <div id="tx-game-result-score" class="summary-score"></div>
+        <p id="tx-game-result-detail" class="hint" style="text-align:center"></p>
+        <div class="rx-actions">
+          <button id="tx-game-result-close" type="button">閉じる</button>
+          <button id="tx-game-again" class="primary" type="button">もう一度</button>
+        </div>
+      </div>
     </div>
     </div>
 
@@ -209,7 +246,7 @@
       </div>
       <div class="setting-row">
         <span class="name">出題文字数</span>
-        <div class="seg" style="flex:1;max-width:220px">
+        <div class="seg">
           <button data-group="1" class="set-group active" type="button">1</button>
           <button data-group="3" class="set-group" type="button">3</button>
           <button data-group="5" class="set-group" type="button">5</button>
@@ -229,7 +266,7 @@
       </div>
       <div class="setting-row">
         <span class="name">入力方式</span>
-        <div class="seg" style="flex:1;max-width:260px">
+        <div class="seg">
           <button id="set-input-straight" class="active" type="button">ストレート</button>
           <button id="set-input-paddle" type="button">二つボタン</button>
         </div>
@@ -273,7 +310,7 @@
     <div class="card about">
       <h2>このアプリについて</h2>
       <p style="font-size:14px">
-        モールス練習 v1.3.0<br>
+        モールス練習 v1.4.0<br>
         欧文・和文対応のモールス信号練習アプリ。オフラインでも動作します。<br>
         <a href="https://github.com/tomohiko-ohhashi/moco-prac" target="_blank" rel="noopener">GitHub リポジトリ</a>
       </p>
@@ -298,6 +335,7 @@
 <script src="./js/morse-codec.js"></script>
 <script src="./js/morse-tree.js"></script>
 <script src="./js/keyer.js"></script>
+<script src="./js/typing-game.js"></script>
 <script src="./js/storage.js"></script>
 <script src="./js/audio.js"></script>
 <script src="./js/ui-common.js"></script>
