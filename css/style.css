@@ -327,7 +327,8 @@ body.fit-tx #tab-tx {
   body.fit-tx #tab-tx .tx-game-head { margin-bottom: 4px; }
   body.fit-tx #tab-tx .tx-game-head .stepper button { min-height: 36px; min-width: 40px; }
   body.fit-tx #tab-tx .tx-game-durs button { min-height: 30px; padding: 2px 6px; font-size: 12px; }
-  body.fit-tx #tab-tx .tx-game-word { min-height: 44px; font-size: 28px; padding: 2px 0; }
+  body.fit-tx #tab-tx .tx-game-word { min-height: 52px; font-size: 26px; padding: 0; }
+  body.fit-tx #tab-tx .tx-game-word > span small { font-size: 10px; }
   body.fit-tx #tab-tx .tx-game-word .count { font-size: 32px; }
   body.fit-tx #tab-tx .tx-game-next { display: none; }
   body.fit-tx #tab-tx #tx-game-start { min-height: 44px; font-size: 16px; }
@@ -485,30 +486,49 @@ body.fit-tx #tab-tx {
 }
 .tx-game-status { margin-bottom: 4px; }
 .tx-game-word {
-  min-height: 56px;
+  min-height: 64px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  gap: 0.15em;
-  font-size: 34px;
+  gap: 4px;
+  font-size: 32px;
   font-weight: 700;
-  letter-spacing: 0.05em;
   overflow-x: auto;
   white-space: nowrap;
-  padding: 4px 0;
+  padding: 2px 0;
+}
+.tx-game-word > span {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 34px;
+  padding: 0 3px 2px;
+  border-bottom: 3px solid transparent;
+  line-height: 1.1;
+}
+.tx-game-word > span b { font-weight: 700; }
+.tx-game-word > span small {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-top: 2px;
 }
 .tx-game-word .done { color: var(--ok); }
+.tx-game-word .done small { color: var(--ok); opacity: 0.8; }
 .tx-game-word .cur {
   color: var(--text);
-  border-bottom: 3px solid var(--warn);
+  border-bottom-color: var(--warn);
 }
+.tx-game-word .cur small { color: var(--warn); }
 .tx-game-word .cur.wrong {
   color: var(--ng);
   border-bottom-color: var(--ng);
   animation: tx-shake 0.25s;
 }
+.tx-game-word .cur.wrong small { color: var(--ng); }
 .tx-game-word .pending { color: var(--muted); }
-.tx-game-word .count { color: var(--accent); font-size: 40px; }
+.tx-game-word .count { color: var(--accent); font-size: 40px; border: none; }
 .tx-game-next { text-align: center; color: var(--muted); font-size: 14px; min-height: 18px; }
 @keyframes tx-shake {
   0%, 100% { transform: translateX(0); }
